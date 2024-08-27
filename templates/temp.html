@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature and Humidity Management Check Sheet</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- 홈 버튼 -->
+    <div class="home-button-container">
+        <button class="home-button" onclick="goHome()">Home</button>
+    </div>
+
+    <div class="container">
+        <div class="info-section">
+            <p><strong>Year:</strong> {{ year }}</p>
+            <p><strong>Month:</strong> {{ month }}</p>
+            <p><strong>Team:</strong> {{ team }}</p>
+            <p><strong>Manager:</strong> {{ manager }}</p>
+        </div>
+
+        <!-- 온도 및 습도 관리 Check Sheet 입력 폼 -->
+        <form id="tempForm">
+            <div class="form-group">
+                <label for="temperature">온도:</label>
+                <input type="number" id="temperature" name="temperature" required>
+            </div>
+            <div class="form-group">
+                <label for="humidity">습도:</label>
+                <input type="number" id="humidity" name="humidity" required>
+            </div>
+            <div class="form-group">
+                <input type="hidden" id="team" name="team" value="{{ team }}">
+            </div>
+
+            <!-- 저장 버튼 -->
+            <div class="form-group">
+                <button type="button" onclick="submitTempData()">저장</button>
+            </div>
+   
+            <!-- 이전 버튼 -->
+            <div class="form-group">
+                <button type="button" onclick="goBack()">이전</button>
+            </div>
+
+            <!-- FQA 버튼 -->
+            <div class="form-group">
+                <button type="button" onclick="goToFQA()">FQA</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function goHome() {
+            window.location.href = "/"; // 홈으로 이동
+        }
+        function goBack() {
+            window.history.back(); // 이전 페이지로 이동
+        }
+
+        function goToFQA() {
+            window.location.href = "/fqa"; // FQA 페이지로 이동
+        }
+
+        function submitTempData() {
+            if (confirm("정말로 저장하시겠습니까?")) {
+                const temperature = document.getElementById('temperature').value;
+                const humidity = document.getElementById('humidity').value;
+                if (!humidity) {
+                    alert("습도 값을 입력하세요.");
+                    return;
+                }
+
+                const manager = "{{ manager }}";
+                const team = "{{ team }}";
+                const process = "FQA";
+                const data = {
+                    temperature: temperature,
+                    humidity: humidity,
+                    manager: manager,
+                    team: team,
+                    process: process,
+                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2) // yymmdd 형식 날짜
+                };
+            
+                fetch('/save/temperature', {  // '/save/temperature' 경로로 POST 요청
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    window.location.href = "/fqa"; // 저장 완료 후 FQA 페이지로 이동
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });      
+            }
+        }
+
+    </script>
+</body>
+</html>

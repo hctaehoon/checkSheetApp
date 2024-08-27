@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- 홈 버튼 -->
+    <div class="home-button-container">
+        <button class="home-button" onclick="goHome()">Home</button>
+    </div>
+
+    <div class="container">
+        <h1>Database Management</h1>
+
+        <!-- 테이블 데이터 표시 영역 -->
+        <div id="table-data" class="table-data">
+            <!-- 선택된 테이블의 데이터가 이곳에 표시됨 -->
+        </div>
+
+        <!-- 테이블 선택 및 데이터 삭제 버튼들 -->
+        <div class="button-group">
+            <button onclick="selectTable('fqa_sheet1')">FQA Sheet 1</button>
+            <button onclick="selectTable('fqa_sheet2')">FQA Sheet 2</button>
+            <button onclick="selectTable('temperature_records')">Temperature Records</button> <!-- Temp DB 추가 -->
+            
+            <button onclick="deleteAllData()">전체 삭제</button> <!-- 전체 삭제 버튼 수정 -->
+        </div>
+    </div>
+
+    <script>
+        // 홈으로 이동하는 함수
+        function goHome() {
+            window.location.href = "/"; // 홈으로 이동
+        }
+
+        // 글로벌 변수로 selectedTable 정의
+        let selectedTable = '';
+
+        // 테이블 선택 시 데이터를 불러와 표시하는 함수
+        function selectTable(tableName) {
+            selectedTable = tableName; // 테이블 이름을 글로벌 변수에 저장
+            fetch(`/db_manage/${tableName}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('table-data').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // 삭제 버튼 클릭 시 데이터 삭제
+        function deleteData(tableName, itemId) {
+            fetch(`/db_manage/${tableName}/delete/${itemId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    selectTable(tableName); // 삭제 후 다시 테이블 데이터 로드
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // 전체 삭제 버튼 클릭 시 테이블의 모든 데이터 삭제
+        function deleteAllData() {
+            if (!selectedTable) {
+                alert("테이블을 먼저 선택하세요.");
+                return;
+            }
+            fetch(`/db_manage/${selectedTable}/delete_all`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    selectTable(selectedTable); // 삭제 후 다시 테이블 데이터 로드
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+</html>

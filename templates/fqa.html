@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FQA Data Entry</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">FQA Data Entry</div>
+        
+        <!-- 홈 버튼 -->
+        <div class="home-button-container">
+            <button class="home-button" onclick="goHome()">Home</button>
+        </div>
+        <!-- 필수 데이터 입력 폼 -->
+        <form id="dataForm">
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <input type="text" id="year" name="year" readonly>
+            </div>
+            <div class="form-group">
+                <label for="month">Month:</label>
+                <input type="text" id="month" name="month" readonly>
+            </div>
+            <div class="form-group">
+                <label for="team">조:</label>
+                <select id="team" name="team" required onchange="loadTeamData()">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="worker">작업자:</label>
+                <input type="text" id="worker" name="worker" required>
+            </div>
+            <div class="form-group">
+                <label for="manager">관리자:</label>
+                <input type="text" id="manager" name="manager" required>
+            </div>
+
+            <!-- 저장 버튼 -->
+            <div class="form-group">
+                <button type="button" onclick="saveTeamData()">Save</button>
+            </div>
+
+            <!-- 시트 선택 -->
+            <div class="sheet-buttons">
+                <button type="button" onclick="openSheet(1)">청소 Check Sheet</button>
+                <button type="button" onclick="openSheet(2)">청소 검증 Sheet</button>
+                <button type="button" onclick="openSheet(3)">온도 관리 Sheet</button> <!-- 온도 관리 시트 추가 -->
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function goHome() {
+            window.location.href = "/"; // 첫 라우터로 이동
+        }
+        // 오늘 날짜를 기준으로 년/월 자동 기입
+        window.onload = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+
+            document.getElementById('year').value = year;
+            document.getElementById('month').value = month;
+
+            loadTeamData();
+        };
+
+        // 팀별 작업자 및 관리자 정보 불러오기
+        function loadTeamData() {
+            const team = document.getElementById('team').value;
+            const savedData = localStorage.getItem(`team_${team}`);
+
+            if (savedData) {
+                const teamData = JSON.parse(savedData);
+                document.getElementById('worker').value = teamData.worker;
+                document.getElementById('manager').value = teamData.manager;
+            } else {
+                document.getElementById('worker').value = '';
+                document.getElementById('manager').value = '';
+            }
+        }
+
+        // 팀별 작업자 및 관리자 정보 저장하기
+        function saveTeamData() {
+            const team = document.getElementById('team').value;
+            const worker = document.getElementById('worker').value;
+            const manager = document.getElementById('manager').value;
+
+            const teamData = {
+                worker: worker,
+                manager: manager
+            };
+
+            localStorage.setItem(`team_${team}`, JSON.stringify(teamData));
+            alert(`Data saved for Team ${team}`);
+        }
+
+        // 시트 열기 기능 (시트 번호에 따라 다른 페이지로 이동하도록 설정)
+        function openSheet(sheetNumber) {
+            const form = document.getElementById('dataForm');
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+
+            if (sheetNumber === 1) {
+                window.location.href = `/fqa/sheet1?${queryString}`;
+            } else if (sheetNumber === 2) {
+                window.location.href = `/fqa/sheet2?${queryString}`;
+            } else if (sheetNumber === 3) {
+                window.location.href = `/fqa/temp?${queryString}`; // 온도 관리 시트 라우터 설정
+            }
+        }
+    </script>
+</body>
+</html>

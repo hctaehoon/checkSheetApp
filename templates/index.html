@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Selection</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">Select a Process</div>
+        <form action="/select" method="post">
+            {% for process in processes %}
+                <button type="submit" name="process_id" value="{{ process.id }}" class="process-item {% if process.id == selected_process.id %}selected{% endif %}">
+                    {{ process.name }}
+                </button>
+            {% endfor %}
+        </form>
+    </div>
+</body>
+</html>

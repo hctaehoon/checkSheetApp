@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FQA PM Check Sheet</title>
+    <link rel="stylesheet" href="/static/fqa2.css">
+</head>
+<body>
+
+    <!-- 홈 버튼 -->
+    <div class="home-button-container">
+        <button class="home-button" onclick="goHome()">Home</button>
+    </div>
+
+    <div class="container">
+        <div class="info-section">
+            <p><strong>Year:</strong> {{ year }}</p>
+            <p><strong>Month:</strong> {{ month }}</p>
+            <p><strong>Team:</strong> {{ team }}</p>
+            <p><strong>Worker:</strong> {{ worker }}</p>
+            <p><strong>Manager:</strong> {{ manager }}</p>
+        </div>
+
+        <div class="table-section">
+            <div class="title">FQA PM 검증 Check Sheet</div>
+
+            <!-- 표 구성 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>청소 항목</th>
+                        <th>청소 방법</th>
+                        <th>관리 방법</th>
+                        <th>청소 주기</th>
+                        <th>확인</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>작업 테이블 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>2회/Shift<br>1차:8시 20시<br>2차:14시 2시</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="1"></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>제품 구분 다이 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="2"></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>현미경 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="3"></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>확대경 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="4"></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>공구 현미경 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="5"></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>바닥 청소 이물 제거 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="6"></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>치공구 (수성펜, Scribing, Picker pen, Brush) PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올+에어건 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 + 에어건 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="7"></td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Brush 고무 cover PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="8"></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>부자재 보관함 PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="9"></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Suction Pad PM 검증</td>
+                        <td>
+                            육안으로 확인하여 이물 확인한다<br>
+                            무진천+알코올 사용하여 이물, 오염 여부 확인한다
+                        </td>
+                        <td>
+                            1차 검사 : 육안 (작업자)<br>
+                            2차 검사 : 무진천 + 알코올 (관리자)
+                        </td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="10"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group button-group">
+                <button onclick="selectAll()">모두 O 선택</button>
+                <button onclick="submitData()">체크 완료</button>
+            </div>
+            
+            <!-- 홈 버튼 아래에 뒤로가기 버튼 추가 -->
+            <div class="back-button-container">
+                <button class="back-button" onclick="goBack()">Back</button>
+            </div>
+            <!-- 다음 시트 버튼 -->
+            <div class="form-group next-sheet-button">
+                <button onclick="goToNextSheet()">온도 관리 시트</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 뒤로 가기 함수
+        function goBack() {
+            window.history.back(); // 이전 페이지로 이동
+        }
+
+        // 홈으로 이동하는 함수
+        function goHome() {
+            window.location.href = "/"; // 첫 라우터로 이동
+        }
+
+        // 모두 O 선택 버튼 기능
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        // 데이터 수집 및 서버로 전송
+        function submitData() {
+            if (confirm("정말로 체크 완료하시겠습니까?")) {
+                const checkboxes = document.querySelectorAll('.toggle-checkbox');
+                const data = {
+                    team: "{{ team }}",
+                    worker: "{{ worker }}",
+                    manager: "{{ manager }}",
+                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), // yymmdd 형식 날짜
+                    checks: []
+                };
+            
+                checkboxes.forEach(checkbox => {
+                    data.checks.push({
+                        id: checkbox.dataset.id,
+                        checked: checkbox.checked ? 1 : 0
+                    });
+                });
+            
+                fetch('/save/sheet2', {  // '/save/sheet2' 경로로 POST 요청
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });      
+            }
+        }
+        
+    // 다음 시트로 이동하는 함수
+        function goToNextSheet() {
+            // 현재 페이지에서 필요한 데이터(쿼리 파라미터)들을 가져옵니다.
+            const year = "{{ year }}";
+            const month = "{{ month }}";
+            const team = "{{ team }}";
+            const worker = "{{ worker }}";
+            const manager = "{{ manager }}";
+        
+            // 쿼리 파라미터를 포함한 URL을 생성합니다.
+            const url = `/fqa/temp?year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&team=${encodeURIComponent(team)}&worker=${encodeURIComponent(worker)}&manager=${encodeURIComponent(manager)}`;
+        
+            // 생성한 URL로 페이지를 이동합니다.
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html>
