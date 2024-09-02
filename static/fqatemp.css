@@ -1,0 +1,144 @@
+/* 기본 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: auto;
+    overflow-y: auto;
+}
+
+.info-section {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #333;
+}
+
+.info-section p {
+    margin-bottom: 5px;
+}
+
+.info-section strong {
+    color: #000;
+}
+
+/* 폼 그룹 스타일 */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input[type="number"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* 버튼 스타일 */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+button:active {
+    background-color: #00408a;
+    transform: translateY(0);
+}
+
+/* 홈 버튼 스타일 */
+.home-button-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.home-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.home-button:hover {
+    background-color: #218838;
+}
+
+.home-button:active {
+    background-color: #1e7e34;
+}
+
+/* 작은 화면을 위한 추가 조정 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .info-section {
+        font-size: 14px;
+    }
+
+    .form-group label, 
+    .form-group input[type="number"] {
+        font-size: 14px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+
+    .home-button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}

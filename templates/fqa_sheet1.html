@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FQA 청소 Check Sheet</title>
-    <link rel="stylesheet" href="/static/fqa1.css">
+    <link rel="stylesheet" href="/static/fqa1.css?v=1.0">
 </head>
 <body>
 
-    <!-- 홈 버튼 -->
+    <!-- 홈 버튼
     <div class="home-button-container">
         <button class="home-button" onclick="goHome()">Home</button>
-    </div>
+    </div> -->
     <div class="container">
         <div class="info-section">
             <p><strong>Year:</strong> {{ year }}</p>
@@ -137,7 +137,7 @@
                         <td>1회/3개월</td>
                         <td>
                             <input type="hidden" class="toggle-button" data-id="11" value="0">
-                            <button class="confirm-button" onclick="confirmChange('brush', 11)">교체 여부</button>
+                            <button class="confirm-button" onclick="confirmChange('brush', 11)">교체</button>
                         </td>
                     </tr>
                     <tr>
@@ -149,7 +149,7 @@
                         <td>1회/1년</td>
                         <td>
                             <input type="hidden" class="toggle-button" data-id="12" value="0">
-                            <button class="confirm-button" onclick="confirmChange('pad', 12)">교체 여부</button>
+                            <button class="confirm-button" onclick="confirmChange('pad', 12)">교체</button>
                         </td>
                     </tr>
                     
@@ -166,7 +166,7 @@
             </table>
 
             <div class="form-group button-group">
-                <button onclick="selectAll()">모두 O 선택</button>
+                <button onclick="selectAll()">모든 항목 점검</button>
                 <button onclick="submitData()">체크 완료</button>
             </div>
             
@@ -209,7 +209,7 @@
 
         // 교체 여부 버튼 클릭 시 재확인 창 띄우기
         function confirmChange(item, id) {  // id를 추가
-            const confirmed = confirm(`Are you sure you want to confirm the replacement of the ${item}?`);
+            const confirmed = confirm(` ${item}를 교체처리할까요?`);
             if (confirmed) {
                 alert('Replacement confirmed');
                 document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
@@ -245,7 +245,7 @@
                     });
                 });
             
-                fetch('/save/sheet1', {  // '/save/sheet1' 경로로 POST 요청
+                fetch('/save/fqa_sheet1', {  // '/save/sheet1' 경로로 POST 요청
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRS 청소 Check Sheet</title>
+    <link rel="stylesheet" href="/static/fqa1.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="info-section">
+            <p><strong>Year:</strong> {{ year }}</p>
+            <p><strong>Month:</strong> {{ month }}</p>
+            <p><strong>Team:</strong> {{ team }}</p>
+            <p><strong>Worker:</strong> {{ worker }}</p>
+            <p><strong>Manager:</strong> {{ manager }}</p>
+            <p><strong>Equipment ID:</strong> {{ equipment_id }}</p>
+        </div>
+
+        <div class="table-section">
+            <div class="title">VRS 설비점검 Check Sheet</div>
+
+            <!-- 표 구성 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>점검 항목</th>
+                        <th>점검 방법</th>
+                        <th>관리 범위</th>
+                        <th>점검 주기</th>
+                        <th>확인</th> <!-- 확인 컬럼 추가 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>LED</td>
+                        <td>점등상태</td>
+                        <td></td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="1"></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>현미경</td>
+                        <td>점등상태</td>
+                        <td></td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="2"></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>자바라</td>
+                        <td>"이물 및 오염여부, 파손 및 노후 상태"</td>
+                        <td>이물 오염 파손등 없을것</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="3"></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Boat</td>
+                        <td>이물 및 오염 파손 여부 확인</td>
+                        <td>이물 오염 파손 없을것</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="4"></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>양/불 적재판</td>
+                        <td>이물 및 오염여부 확인</td>
+                        <td>이물 오염 파손 없을것</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="5"></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>설비 외관</td>
+                        <td>이물 및 오염여부 확인</td>
+                        <td>이물 오염 파손 없을것</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="6"></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Regulator 교체</td>
+                        <td>정기 교체</td>
+                        <td></td>
+                        <td>정기 교체 1회/3개월</td>
+                        <td>
+                            <input type="hidden" class="toggle-button" data-id="7" value="0">
+                            <button class="confirm-button" onclick="confirmChange('Regulator', 7)">교체</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Boat Pad</td>
+                        <td>정기 교체</td>
+                        <td></td>
+                        <td>정기 교체 1회/1년</td>
+                        <td>
+                            <input type="hidden" class="toggle-button" data-id="8" value="0">
+                            <button class="confirm-button" onclick="confirmChange('Boat Pad', 8)">교체</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>자바라 교체</td>
+                        <td>정기 교체</td>
+                        <td></td>
+                        <td>"정기 교체 1회/5년, 파손 및 노후시 즉시 교체"</td>
+                        <td>
+                            <input type="hidden" class="toggle-button" data-id="9" value="0">
+                            <button class="confirm-button" onclick="confirmChange('자바라', 9)">교체</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group button-group">
+                <button onclick="selectAll()">모든 항목 점검</button>
+                <button onclick="submitData()">체크 완료</button>
+            </div>
+            
+            <div class="back-button-container">
+                <button class="back-button" onclick="goBack()">Back</button>
+            </div>
+            <div class="form-group next-sheet-button">
+                <button onclick="goToNextSheet()">다음 시트</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            window.history.back(); // 이전 페이지로 이동
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function confirmChange(item, id) {
+            const confirmed = confirm(`${item}를 교체처리할까요?`);
+            if (confirmed) {
+                alert('Replacement confirmed');
+                document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
+            } else {
+                alert('Replacement canceled');
+            }
+        }
+
+        function submitData() {
+            if (confirm("정말로 체크 완료하시겠습니까?")) {
+                const checkboxes = document.querySelectorAll('.toggle-checkbox');
+                const toggleButtons = document.querySelectorAll('.toggle-button');
+                const data = {
+                    team: "{{ team }}",
+                    worker: "{{ worker }}",
+                    manager: "{{ manager }}",
+                    equipment_id: "{{ equipment_id }}",
+                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2),
+                    checks: []
+                };
+
+                checkboxes.forEach(checkbox => {
+                    data.checks.push({
+                        id: checkbox.dataset.id,
+                        checked: checkbox.checked ? 1 : 0
+                    });
+                });
+
+                toggleButtons.forEach(button => {
+                    data.checks.push({
+                        id: button.dataset.id,
+                        checked: button.value
+                    });
+                });
+
+                fetch('/save/vrs_sheet1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('네트워크 응답이 성공적이지 않습니다.');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    alert(result.message);
+                    goToNextSheet();
+                })
+                .catch(error => {
+                    alert('데이터 저장에 실패했습니다. 다시 시도해주세요.');
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        function goToNextSheet() {
+            const currentUrl = window.location.href;
+            const nextSheetUrl = currentUrl.replace("sheet1", "sheet2");
+            window.location.href = nextSheetUrl;
+        }
+    </script>
+</body>
+</html>

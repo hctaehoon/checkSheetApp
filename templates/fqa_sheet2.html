@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FQA PM Check Sheet</title>
-    <link rel="stylesheet" href="/static/fqa2.css">
+    <link rel="stylesheet" href="/static/fqa2.css?v=1.0">
 </head>
 <body>
 
-    <!-- 홈 버튼 -->
+    <!-- 홈 버튼
     <div class="home-button-container">
         <button class="home-button" onclick="goHome()">Home</button>
-    </div>
+    </div> -->
 
     <div class="container">
         <div class="info-section">
@@ -182,7 +182,7 @@
             </table>
 
             <div class="form-group button-group">
-                <button onclick="selectAll()">모두 O 선택</button>
+                <button onclick="selectAll()">모든 항목 점검</button>
                 <button onclick="submitData()">체크 완료</button>
             </div>
             
@@ -191,9 +191,7 @@
                 <button class="back-button" onclick="goBack()">Back</button>
             </div>
             <!-- 다음 시트 버튼 -->
-            <div class="form-group next-sheet-button">
-                <button onclick="goToNextSheet()">온도 관리 시트</button>
-            </div>
+
 
         </div>
     </div>
@@ -236,7 +234,7 @@
                     });
                 });
             
-                fetch('/save/sheet2', {  // '/save/sheet2' 경로로 POST 요청
+                fetch('/save/fqa_sheet2', {  // '/save/sheet2' 경로로 POST 요청
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -246,6 +244,7 @@
                 .then(response => response.json())
                 .then(result => {
                     alert(result.message);
+                    window.location.href = "/fqa";
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -261,10 +260,10 @@
             const team = "{{ team }}";
             const worker = "{{ worker }}";
             const manager = "{{ manager }}";
-        
+
             // 쿼리 파라미터를 포함한 URL을 생성합니다.
             const url = `/fqa/temp?year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&team=${encodeURIComponent(team)}&worker=${encodeURIComponent(worker)}&manager=${encodeURIComponent(manager)}`;
-        
+
             // 생성한 URL로 페이지를 이동합니다.
             window.location.href = url;
         }

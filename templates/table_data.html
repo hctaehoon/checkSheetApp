@@ -1,0 +1,6 @@
+{% for item in data %}
+    <div class="db-item">
+        <span>{{ item["id"] }} {{ item["team"] }} {{ item["worker"] }} {{ item["manager"] }} {{ item["date"] }}</span>
+        <button class="delete-button" onclick="deleteData('{{ table_name }}', {{ item['id'] }})">삭제</button>
+    </div>
+{% endfor %}

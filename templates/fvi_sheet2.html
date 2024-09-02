@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FVI PM Check Sheet</title>
+    <link rel="stylesheet" href="/static/fqa1.css?v=1.0">
+</head>
+<body>
+
+    <div class="container">
+        <div class="info-section">
+            <p><strong>Year:</strong> {{ year }}</p>
+            <p><strong>Month:</strong> {{ month }}</p>
+            <p><strong>Team:</strong> {{ team }}</p>
+            <p><strong>Worker:</strong> {{ worker }}</p>
+            <p><strong>Manager:</strong> {{ manager }}</p>
+        </div>
+
+        <div class="table-section">
+            <div class="title">FVI PM Check Sheet</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>청소 항목</th>
+                        <th>청소 방법</th>
+                        <th>관리 방법</th>
+                        <th>청소 주기</th>
+                        <th>확인</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>검사 Jig 상태 PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="1"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천 사용하여 이물, 오염, 갈라짐, 파손 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="1"></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>제품 구분 다이 PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="2"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="2"></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>현미경 (외관 및 내부 렌즈) PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="3"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="3"></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>확대경 PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="4"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="4"></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>바닥 청소, 이물 제거 PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="5"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="5"></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>치공구 (수성펜, 스크러빙펜, 브러쉬) PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="6"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>에어건+무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="6"></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Brush 고무 cover PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="7"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="7"></td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Picker Pen/Pad/Spring PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Lot</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="8"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="8"></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>부자재 보관함 PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="9"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천+알코올 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 + 알코올 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="9"></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Suction Pad PM 검증</td>
+                        <td>육안으로 확인하여 이물 확인한다</td>
+                        <td>1차 검사 : 육안 (작업자)</td>
+                        <td>1회/Shift</td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="10"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>무진천 사용하여 이물, 오염 여부 확인한다</td>
+                        <td>2차 검사 : 무진천 (관리자)</td>
+                        <td></td>
+                        <td><input type="checkbox" class="toggle-checkbox" data-id="10"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group button-group">
+                <button onclick="selectAll()">모든 항목 점검</button>
+                <button onclick="submitData()">체크 완료</button>
+            </div>
+            
+            <div class="back-button-container">
+                <button class="back-button" onclick="goBack()">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        function goHome() {
+            window.location.href = "/"; 
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function submitData() {
+            if (confirm("정말로 체크 완료하시겠습니까?")) {
+                const checkboxes = document.querySelectorAll('.toggle-checkbox');
+                const data = {
+                    team: "{{ team }}",
+                    worker: "{{ worker }}",
+                    manager: "{{ manager }}",
+                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), 
+                    checks: []
+                };
+            
+                checkboxes.forEach(checkbox => {
+                    data.checks.push({
+                        id: checkbox.dataset.id,
+                        checked: checkbox.checked ? 1 : 0
+                    });
+                });
+            
+                fetch('/save/fvi_sheet2', {  
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    window.location.href = "/fvi"; 
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });      
+            }
+        }
+    </script>
+</body>
+</html>

@@ -6,7 +6,18 @@ from databases import Database
 import asyncio
 from datetime import datetime, timedelta
 
-DATABASE_URL = "sqlite:///./test.db"
+# 네트워크 경로로 변경된 DATABASE_URL
+# DATABASE_URL = "sqlite:///\\\\110.15.136.98\\data\\test.db"
+# local
+# 현재 스크립트의 디렉토리 경로를 가져옵니다.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# test.db 파일의 전체 경로를 생성합니다.
+database_path = os.path.join(current_dir, "test.db")
+
+# DATABASE_URL을 수정합니다.
+DATABASE_URL = f"sqlite:///{database_path}"
+
 database = Database(DATABASE_URL)
 
 def is_merged_cell(sheet, row, col):
@@ -93,7 +104,7 @@ def update_fqa_excel(date, team, worker, manager, items):
         next_date = (datetime.strptime(date, "%y%m%d") + timedelta(days=90)).strftime("%y%m%d")
         next_date_str = f"다음 교체일: {next_date}"
         sheet1["G29"] = f"{recent_date}   {next_date_str}"
-        with open(replace_log_filepath, 'a') as replace_log_file:
+        with open(replace_log_filepath, 'a') as replace_log_file: 
             replace_log_file.write(f"G29 {recent_date}   {next_date_str}\n")
 
     if items.get(12) == 1:  # item_id 12가 1이면 교체일 갱신
