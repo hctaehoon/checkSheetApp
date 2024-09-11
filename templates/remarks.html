@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비고 관리</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>비고 관리</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>공정</th>
+                    <th>장비 종류</th>
+                    <th>장비 호기</th>
+                    <th>조</th>
+                    <th>관리자</th>
+                    <th>비고</th>
+                    <th>날짜</th>
+                    <th>작업</th> <!-- 삭제 작업 칸 추가 -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for remark in remarks %}
+                <tr>
+                    <td>{{ remark.id }}</td>
+                    <td>{{ remark.process }}</td>
+                    <td>{{ remark.equipment_type or 'None' }}</td>
+                    <td>{{ remark.equipment_id or 'None' }}</td>
+                    <td>{{ remark.team }}</td>
+                    <td>{{ remark.manager }}</td>
+                    <td>{{ remark.remark }}</td>
+                    <td>{{ remark.date }}</td>
+                    <td>
+                        <button onclick="deleteRemark({{ remark.id }})">삭제</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 전체 삭제 버튼 추가 -->
+        <button onclick="deleteAllRemarks()">전체 삭제</button>
+    </div>
+
+    <script>
+        // 개별 삭제 함수
+        function deleteRemark(id) {
+            if (confirm("정말로 이 비고를 삭제하시겠습니까?")) {
+                fetch(`/delete/remark/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    window.location.reload();  // 삭제 후 페이지 새로고침
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        // 전체 삭제 함수
+        function deleteAllRemarks() {
+            if (confirm("정말로 모든 비고를 삭제하시겠습니까?")) {
+                fetch(`/delete/remarks`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert(result.message);
+                    window.location.reload();  // 삭제 후 페이지 새로고침
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

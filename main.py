@@ -8,7 +8,7 @@ import asyncio
 import os
 import platform
 import subprocess
-from db import database, insert_data, get_all_data, delete_data, metadata
+from db import database, insert_data, get_all_data, delete_data, metadata , insert_remark_data , get_remarks , remarks_table
 
 
 
@@ -198,19 +198,52 @@ async def fvi_sheet2(request: Request, year: str, month: str, team: str, worker:
 @app.post("/save/{sheet_name}")
 async def save_check_sheet(sheet_name: str, request: Request):
     data = await request.json()
-
+    
+    # 시트 이름을 로그로 출력하여 확인
+    print(f"Received sheet name: {sheet_name}")
+    
+    # 체크리스트 데이터 처리
     if sheet_name.startswith("fqa"):
         await insert_fqa_data(sheet_name, data)
     elif sheet_name.startswith("vrs"):
         await insert_vrs_data(sheet_name, data)
     elif sheet_name.startswith("fvi"):
-        await insert_fqa_data(sheet_name, data)  # FVI도 FQA와 같은 구조를 사용
+        await insert_fqa_data(sheet_name, data)
+    elif sheet_name == "remark":
+        print("remark전송")
     else:
         raise ValueError("Invalid sheet name")
 
+    # 비고 데이터가 있으면 비고 테이블에 저장
+    if data.get("remark"):
+        await insert_remark_data({
+            "process": sheet_name,  # 공정명을 sheet_name으로 저장
+            "equipment_type": data.get("equipment_type", None),  # 선택적 데이터
+            "equipment_id": data.get("equipment_id", None),      # 선택적 데이터
+            "team": data.get("team"),
+            "manager": data.get("manager"),
+            "remark": data.get("remark"),
+            "date": data.get("date")
+        })
+
     return JSONResponse(content={"message": f"Data successfully saved to {sheet_name}"})
 
+# 비고 데이터 저장 라우터
+@app.post("/save/remark")
+async def save_remark(request: Request):
+    data = await request.json()
+    # 비고 데이터가 공백이 아니면 저장
+    if data.get("remark"):
+        await insert_remark_data(data)
+    return JSONResponse(content={"message": "Remark successfully saved"})
 
+
+
+# 비고 데이터 조회 라우터
+@app.get("/remarks", response_class=HTMLResponse)
+async def get_remarks_page(request: Request):
+    remarks = await get_remarks()
+    return templates.TemplateResponse("remarks.html", {"request": request, "remarks": remarks})
 # DB 관리 페이지
 @app.get("/db_manage", response_class=HTMLResponse)
 async def db_manage(request: Request):
@@ -238,6 +271,24 @@ async def delete_all_data(table_name: str):
     await database.execute(query)
     return {"message": f"All data from {table_name} has been deleted"}
 
+from fastapi import HTTPException
+
+# 개별 비고 삭제 라우터
+@app.delete("/delete/remark/{remark_id}")
+async def delete_remark(remark_id: int):
+    query = remarks_table.delete().where(remarks_table.c.id == remark_id)
+    result = await database.execute(query)
+    if result:
+        return {"message": "비고가 성공적으로 삭제되었습니다."}
+    else:
+        raise HTTPException(status_code=404, detail="비고를 찾을 수 없습니다.")
+
+# 전체 비고 삭제 라우터
+@app.delete("/delete/remarks")
+async def delete_all_remarks():
+    query = remarks_table.delete()
+    await database.execute(query)
+    return {"message": "모든 비고가 성공적으로 삭제되었습니다."}
 
 # # FQA 온도 체크
 # @app.get("/fqa/temp", response_class=HTMLResponse)

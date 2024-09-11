@@ -110,6 +110,40 @@ temperature_table = Table(
     Column("date", String),
 )
 
+
+# 비고 테이블 추가
+remarks_table = Table(
+    "remarks",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("process", String),        # 공정 이름 (예: FQA, VRS 등)
+    Column("equipment_type", String, nullable=True), # 장비 종류 (Optional)
+    Column("equipment_id", Integer, nullable=True),  # 장비 호기 (Optional)
+    Column("team", String),           # 조
+    Column("manager", String),        # 관리자
+    Column("remark", String),         # 비고 내용
+    Column("date", String)            # 날짜
+)
+
+
+# 비고 데이터 삽입 함수 추가
+async def insert_remark_data(data):
+    query = remarks_table.insert().values(
+        process=data.get("process"),
+        equipment_type=data.get("equipment_type"),
+        equipment_id=data.get("equipment_id"),
+        team=data.get("team"),
+        manager=data.get("manager"),
+        remark=data.get("remark"),
+        date=data.get("date")
+    )
+    await database.execute(query)
+    
+# 비고 데이터 조회 함수 추가
+async def get_remarks():
+    query = remarks_table.select()
+    return await database.fetch_all(query)
+
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -3,11 +3,11 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif; /* 깔끔하고 모던한 폰트 */
 }
 
 body {
-    background-color: #f4f4f4;
+    background-color: #f7f8fa; /* 밝고 부드러운 배경색 */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,12 +17,12 @@ body {
 }
 
 .container {
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    background-color: #ffffff; /* 흰색 배경 */
+    border-radius: 10px; /* 부드러운 모서리 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
+    padding: 30px;
     width: 100%;
-    max-width: 480px; /* 최대 너비 조정 */
+    max-width: 600px; /* 최대 너비 조정 */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -31,62 +31,64 @@ body {
 }
 
 .title {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 28px; /* 폰트 크기 조금 키움 */
+    font-weight: 600; /* 폰트 굵기를 약간 강조 */
     margin-bottom: 20px;
     text-align: center;
-    color: #333;
+    color: #2f3437; /* 진한 회색 톤의 폰트 */
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    font-size: 16px;
-    margin-bottom: 5px;
-    color: #333;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #6b7280; /* 중간 밝기의 회색 */
 }
 
 .form-group input, 
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    transition: border-color 0.3s ease;
+    border: 1px solid #e0e0e0; /* 부드러운 경계 */
+    border-radius: 6px;
+    background-color: #fafafa; /* 연한 회색 배경 */
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .form-group input:focus, 
 .form-group select:focus {
-    border-color: #007bff;
+    border-color: #5c88f7; /* 밝은 파란색으로 포커스 */
+    background-color: #ffffff; /* 포커스 시 배경을 흰색으로 */
     outline: none;
 }
 
 /* 버튼 스타일 */
 button {
-    background-color: #007bff;
+    background-color: #5c88f7; /* 부드러운 파란색 */
     color: white;
     border: none;
     padding: 12px 20px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 500;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     width: 100%;
     margin-bottom: 10px;
 }
 
 button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+    background-color: #4a76e5; /* 조금 더 진한 파란색 */
+    transform: translateY(-2px); /* 가벼운 상단 이동 */
 }
 
 button:active {
-    background-color: #00408a;
+    background-color: #3d61cb; /* 눌렸을 때 어두운 파란색 */
     transform: translateY(0);
 }
 
@@ -97,72 +99,72 @@ button:active {
 }
 
 .home-button {
-    background-color: #28a745;
+    background-color: #34c759; /* 깔끔한 그린색 */
     color: white;
-    padding: 10px 20px;
+    padding: 12px 20px;
     font-size: 16px;
     border-radius: 8px;
     width: 100%;
 }
 
 .home-button:hover {
-    background-color: #218838;
+    background-color: #2eb54c; /* 더 진한 그린 */
 }
 
 .home-button:active {
-    background-color: #1e7e34;
+    background-color: #249040; /* 더 어두운 그린 */
 }
 
 /* 시트 버튼 스타일 */
 .sheet-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .sheet-buttons button {
-    background-color: #17a2b8;
+    background-color: #f1f3f4; /* 부드러운 회색 */
+    color: #333333;
 }
 
 .sheet-buttons button:hover {
-    background-color: #138496;
+    background-color: #e1e5e8; /* 살짝 더 어두운 회색 */
 }
 
 .sheet-buttons button:active {
-    background-color: #0f6674;
+    background-color: #d1d5d9; /* 더 어두운 회색 */
 }
 
-/* 태블릿을 위한 추가적인 반응형 조정 */
+/* 태블릿을 위한 반응형 조정 */
 @media (max-width: 1024px) {
     .container {
-        max-width: 90%; /* 태블릿에서의 너비를 화면 크기에 맞춤 */
-        padding: 15px;
-        overflow-y: auto; /* 스크롤 가능 */
+        max-width: 90%;
+        padding: 20px;
+        overflow-y: auto;
     }
 
     .title {
-        font-size: 22px; /* 폰트 크기 조정 */
+        font-size: 24px;
     }
 
     .form-group label, 
     .form-group input, 
     .form-group select {
-        font-size: 14px; /* 입력 폼의 폰트 크기 조정 */
+        font-size: 14px;
     }
 
     button {
-        padding: 10px; /* 버튼 패딩 조정 */
-        font-size: 14px; /* 버튼 폰트 크기 조정 */
-    
+        padding: 10px;
+        font-size: 14px;
+    }
 
     .home-button {
-        padding: 8px 15px; /* 홈 버튼 패딩 조정 */
-        font-size: 14px; /* 홈 버튼 폰트 크기 조정 */
+        padding: 10px 15px;
+        font-size: 14px;
     }
 
     .sheet-buttons button {
-        padding: 10px; /* 시트 버튼 패딩 조정 */
-        font-size: 14px; /* 시트 버튼 폰트 크기 조정 */
+        padding: 10px;
+        font-size: 14px;
     }
-}
 }

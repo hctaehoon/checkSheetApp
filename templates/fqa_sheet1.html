@@ -8,10 +8,6 @@
 </head>
 <body>
 
-    <!-- 홈 버튼
-    <div class="home-button-container">
-        <button class="home-button" onclick="goHome()">Home</button>
-    </div> -->
     <div class="container">
         <div class="info-section">
             <p><strong>Year:</strong> {{ year }}</p>
@@ -165,6 +161,12 @@
                 </tbody>
             </table>
 
+            <!-- 비고 입력 필드 추가 -->
+            <div class="form-group">
+                <label for="remark">비고:</label>
+                <textarea id="remark" name="remark" rows="3" cols="50"></textarea>
+            </div>
+
             <div class="form-group button-group">
                 <button onclick="selectAll()">모든 항목 점검</button>
                 <button onclick="submitData()">체크 완료</button>
@@ -192,6 +194,7 @@
         function goHome() {
             window.location.href = "/"; // 첫 라우터로 이동
         }
+
         // 다음 시트로 이동하는 함수
         function goToNextSheet() {
             const currentUrl = window.location.href;
@@ -208,7 +211,7 @@
         }
 
         // 교체 여부 버튼 클릭 시 재확인 창 띄우기
-        function confirmChange(item, id) {  // id를 추가
+        function confirmChange(item, id) {  
             const confirmed = confirm(` ${item}를 교체처리할까요?`);
             if (confirmed) {
                 alert('Replacement confirmed');
@@ -218,50 +221,81 @@
             }
         }
 
-        // 데이터 수집 및 서버로 전송
-        function submitData() {
-            if (confirm("정말로 체크 완료하시겠습니까?")) {
-                const checkboxes = document.querySelectorAll('.toggle-checkbox');
-                const toggleButtons = document.querySelectorAll('.toggle-button');
-                const data = {
-                    team: "{{ team }}",
-                    worker: "{{ worker }}",
-                    manager: "{{ manager }}",
-                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), // yymmdd 형식 날짜
-                    checks: []
-                };
-            
-                checkboxes.forEach(checkbox => {
-                    data.checks.push({
-                        id: checkbox.dataset.id,
-                        checked: checkbox.checked ? 1 : 0
-                    });
-                });
+// 데이터 수집 및 서버로 전송
+function submitData() {
+    if (confirm("정말로 체크 완료하시겠습니까?")) {
+        const checkboxes = document.querySelectorAll('.toggle-checkbox');
+        const toggleButtons = document.querySelectorAll('.toggle-button');
+        const remark = document.querySelector('#remark').value;  // 비고 입력 값
 
-                toggleButtons.forEach(button => {
-                    data.checks.push({
-                        id: button.dataset.id,
-                        checked: button.value
-                    });
-                });
-            
-                fetch('/save/fqa_sheet1', {  // '/save/sheet1' 경로로 POST 요청
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    alert(result.message);
-                    goToNextSheet();  // 데이터 전송 후 다음 시트로 이동
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });      
-            }
+        const data = {
+            team: "{{ team }}",
+            worker: "{{ worker }}",
+            manager: "{{ manager }}",
+            date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), // yymmdd 형식 날짜
+            checks: []
+        };
+
+        checkboxes.forEach(checkbox => {
+            data.checks.push({
+                id: checkbox.dataset.id,
+                checked: checkbox.checked ? 1 : 0
+            });
+        });
+
+        toggleButtons.forEach(button => {
+            data.checks.push({
+                id: button.dataset.id,
+                checked: button.value
+            });
+        });
+
+        // 체크리스트 데이터 전송
+        fetch('/save/fqa_sheet1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            goToNextSheet();  // 데이터 전송 후 다음 시트로 이동
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // 비고 데이터가 있는 경우 비고 데이터 전송
+        if (remark.trim() !== "") {
+            const remarkData = {
+                process: "FQA",
+                team: "{{ team }}",
+                manager: "{{ manager }}",
+                remark: remark,
+                date: data.date
+            };
+
+            fetch('/save/remark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(remarkData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
+    }
+}
+
+
     </script>
 </body>
 </html>
