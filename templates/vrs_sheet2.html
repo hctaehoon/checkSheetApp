@@ -92,11 +92,17 @@
                             <span id="item-7-last-replacement">마지막 교체일: </span><br>
                             <span id="item-7-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="7" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Brush', 7, 90)">교체</button>
+                            <button class="confirm-button" data-id="7" onclick="confirmChange('Brush', 7, 90, {{ equipment_id }})">교체</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- 비고 입력 필드 추가 -->
+            <div class="form-group">
+                <label for="remark">비고:</label>
+                <textarea id="remark" name="remark" rows="3" cols="50"></textarea>
+            </div>
 
             <div class="form-group button-group">
                 <button onclick="selectAll()">모든 항목 점검</button>
@@ -115,88 +121,152 @@
     </div>
 
     <script>
-        function goBack() {
-            window.history.back();
+window.onload = function() {
+    const sheetName = "vrs_sheet2";  // 시트 이름
+    const equipmentId = "{{ equipment_id }}";  // 서버에서 전달된 equipment_id 사용
+
+    // 교체 주기 데이터를 서버에서 불러옴
+    fetch(`/get/replacement_schedule/${sheetName}?equipment_id=${equipmentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.replacement_data) {
+                data.replacement_data.forEach(item => {
+                    document.querySelector(`#item-${item.item_id}-last-replacement`).textContent = `마지막 교체일: ${item.last_replacement_date}`;
+                    document.querySelector(`#item-${item.item_id}-next-replacement`).textContent = `다음 교체일: ${item.next_replacement_date}`;
+                });
+            } else {
+                console.log("No replacement data found for this equipment.");
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching replacement data:', error);
+        });
+};
+
+// 뒤로 가기 기능
+function goBack() {
+    window.history.back();
+}
+
+// 모든 체크박스 선택 기능
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.toggle-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+// 교체 버튼 처리
+function confirmChange(item, id, intervalDays, equipmentId) {
+    console.log(`Confirming change for item: ${item}, equipment_id: ${equipmentId}`);
+    const confirmed = confirm(`${item}를 교체처리할까요?`);
+    if (confirmed) {
+        alert('Replacement confirmed');
+        document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
+        const button = document.querySelector(`button[data-id="${id}"]`);
+        if (button) {
+            button.style.display = 'none';  // 버튼 숨김
         }
 
-        function selectAll() {
-            const checkboxes = document.querySelectorAll('.toggle-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = true;
+        // const today = '2024-09-16'; // Test 날짜
+        const today = new Date().toISOString().split('T')[0];
+
+        const nextReplacementDate = new Date();
+        nextReplacementDate.setDate(nextReplacementDate.getDate() + intervalDays);
+        const formattedNextDate = nextReplacementDate.toISOString().split('T')[0];
+
+        document.querySelector(`#item-${id}-last-replacement`).textContent = `마지막 교체일: ${today}`;
+        document.querySelector(`#item-${id}-next-replacement`).textContent = `다음 교체일: ${formattedNextDate}`;
+
+        const data = {
+            sheet_name: "vrs_sheet2",
+            item_id: id,
+            last_replacement_date: today,
+            next_replacement_date: formattedNextDate,
+            replacement_interval_days: intervalDays,
+            equipment_id: equipmentId
+        };
+
+        fetch('/update/replacement_schedule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log(result.message);
+        })
+        .catch(error => {
+            console.error('Error updating replacement schedule:', error);
+        });
+    } else {
+        alert('Replacement canceled');
+    }
+}
+
+// 체크 완료 데이터 수집 및 서버로 전송
+function submitData() {
+    const checkboxes = document.querySelectorAll('.toggle-checkbox');
+    const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+
+    if (unchecked) {
+        alert("모든 체크 항목을 완료해 주세요.");
+        return;
+    }
+
+    if (confirm("정말로 체크 완료하시겠습니까?")) {
+        const data = {
+            team: "{{ team }}",
+            worker: "{{ worker }}",
+            manager: "{{ manager }}",
+            equipment_id: "{{ equipment_id }}",
+            date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2),
+            checks: []
+        };
+
+        checkboxes.forEach(checkbox => {
+            data.checks.push({
+                id: checkbox.dataset.id,
+                checked: checkbox.checked ? 1 : 0
             });
-        }
+        });
 
-        function confirmChange(item, id, intervalDays) {
-            const confirmed = confirm(`${item}를 교체처리할까요?`);
-            if (confirmed) {
-                const today = new Date().toISOString().split('T')[0];
-                const nextReplacementDate = new Date();
-                nextReplacementDate.setDate(nextReplacementDate.getDate() + intervalDays);
-                const formattedNextDate = nextReplacementDate.toISOString().split('T')[0];
-                document.querySelector(`#item-${id}-last-replacement`).textContent = `마지막 교체일: ${today}`;
-                document.querySelector(`#item-${id}-next-replacement`).textContent = `다음 교체일: ${formattedNextDate}`;
-                document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
-            }
-        }
+        const toggleButtons = document.querySelectorAll('.toggle-button');
+        toggleButtons.forEach(button => {
+            data.checks.push({
+                id: button.dataset.id,
+                checked: button.value
+            });
+        });
 
-        function submitData() {
-            const checkboxes = document.querySelectorAll('.toggle-checkbox');
-            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+        fetch('/save/vrs_sheet2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            goToNextSheet();
+        })
+        .catch(error => {
+            alert('데이터 저장에 실패했습니다. 다시 시도해주세요.');
+            console.error('Error:', error);
+        });
+    }
+}
 
-            if (unchecked) {
-                alert("모든 체크 항목을 완료해 주세요.");
-                return;
-            }
+// 다음 시트로 이동
+function goToNextSheet() {
+    const currentUrl = window.location.href;
+    const nextSheetUrl = currentUrl.replace("sheet2", "sheet3");
+    window.location.href = nextSheetUrl;
+}
+</script>
 
-            if (confirm("정말로 체크 완료하시겠습니까?")) {
-                const data = {
-                    team: "{{ team }}",
-                    worker: "{{ worker }}",
-                    manager: "{{ manager }}",
-                    equipment_id: "{{ equipment_id }}",
-                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2),
-                    checks: []
-                };
-
-                checkboxes.forEach(checkbox => {
-                    data.checks.push({
-                        id: checkbox.dataset.id,
-                        checked: checkbox.checked ? 1 : 0
-                    });
-                });
-
-                const toggleButtons = document.querySelectorAll('.toggle-button');
-                toggleButtons.forEach(button => {
-                    data.checks.push({
-                        id: button.dataset.id,
-                        checked: button.value
-                    });
-                });
-
-                fetch('/save/vrs_sheet2', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    alert(result.message);
-                    goToNextSheet();
-                })
-                .catch(error => {
-                    alert('데이터 저장에 실패했습니다. 다시 시도해주세요.');
-                    console.error('Error:', error);
-                });
-            }
-        }
-
-        function goToNextSheet() {
-            const currentUrl = window.location.href;
-            const nextSheetUrl = currentUrl.replace("sheet2", "sheet3");
-            window.location.href = nextSheetUrl;
-        }
-    </script>
 </body>
 </html>

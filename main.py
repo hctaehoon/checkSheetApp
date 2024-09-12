@@ -244,7 +244,7 @@ async def save_check_sheet(sheet_name: str, request: Request):
     # 비고 데이터가 있으면 비고 테이블에 저장
     if data.get("remark"):
         await insert_remark_data({
-            "process": sheet_name,  # 공정명을 sheet_name으로 저장
+            "process": data.get("process"),  # 공정명을 sheet_name으로 저장
             "equipment_type": data.get("equipment_type", None),  # 선택적 데이터
             "equipment_id": data.get("equipment_id", None),      # 선택적 데이터
             "team": data.get("team"),
@@ -261,6 +261,7 @@ async def save_remark(request: Request):
     data = await request.json()
     # 비고 데이터가 공백이 아니면 저장
     if data.get("remark"):
+        print("저장할 데이터:", data)
         await insert_remark_data(data)
     return JSONResponse(content={"message": "Remark successfully saved"})
 
@@ -321,8 +322,15 @@ async def delete_all_remarks():
 @app.post("/update/replacement_schedule")
 async def update_replacement_schedule(data: dict):
     # 장비 호기 값이 없는 경우 기본값 0으로 설정
+    print(f"Received data: {data}")
+    # 장비 호기가 있는 경우 출력
     equipment_id = data.get('equipment_id', 0)
+
     
+    if equipment_id:
+        print(f"Equipment ID: {equipment_id}")
+    else:
+        print("장비가없음")
     query = replacement_schedule.update().where(
         (replacement_schedule.c.sheet_name == data['sheet_name']) &
         (replacement_schedule.c.item_id == data['item_id']) &
@@ -332,9 +340,10 @@ async def update_replacement_schedule(data: dict):
         next_replacement_date=data['next_replacement_date'],
         replacement_interval_days=data['replacement_interval_days']
     )
+
+    print(f"Executing query with equipment_id={equipment_id}: {query}") 
     await database.execute(query)
     return {"message": "Replacement date updated successfully"}
-import logging
 
 # 교체 주기 조회 API
 @app.get("/get/replacement_schedule/{sheet_name}")
@@ -370,8 +379,12 @@ async def get_replacement_schedule(sheet_name: str, equipment_id: Optional[int] 
 
 # 교체 주기 체크 API
 @app.get("/check/replacement_dates/{sheet_name}")
-async def check_replacement_dates(sheet_name: str):
+async def check_replacement_dates(sheet_name: str, equipment_id: Optional[int] = None):
     query = replacement_schedule.select().where(replacement_schedule.c.sheet_name == sheet_name)
+    
+    if equipment_id is not None:
+        query = query.where(replacement_schedule.c.equipment_id == equipment_id)
+    
     rows = await database.fetch_all(query)
 
     # 현재 날짜와 비교하여 교체 주기가 지난 항목이 있는지 확인
@@ -382,6 +395,7 @@ async def check_replacement_dates(sheet_name: str):
             break
 
     return {"allValid": all_valid}
+
 
 # # FQA 온도 체크
 # @app.get("/fqa/temp", response_class=HTMLResponse)

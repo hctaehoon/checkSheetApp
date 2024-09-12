@@ -2,10 +2,6 @@ from sqlalchemy import select
 from datetime import datetime, timedelta
 from db import replacement_schedule, database
 
-
-
-
-
 # 시트별 기본 항목과 교체 주기 정의
 default_items = {
     "fqa_sheet1": [
@@ -17,14 +13,14 @@ default_items = {
         {"item_id": 15, "replacement_interval_days": 90},  # Brush
         {"item_id": 16, "replacement_interval_days": 365},  # Jig Pad
     ],
-    # "vrs_sheet1": [
-    #     {"item_id": 7, "replacement_interval_days": 90},  # Regulator
-    #     {"item_id": 8, "replacement_interval_days": 365},  # Boat Pad
-    #     {"item_id": 9, "replacement_interval_days": 1825},  # 자바라 교체
-    # ],
-    # "vrs_sheet2": [
-    #     {"item_id": 7, "replacement_interval_days": 90},  # Brush 교체
-    # ],
+    "vrs_sheet1": [
+        {"item_id": 7, "replacement_interval_days": 90},  # Regulator
+        {"item_id": 8, "replacement_interval_days": 365},  # Boat Pad
+        {"item_id": 9, "replacement_interval_days": 1825},  # 자바라 교체
+    ],
+    "vrs_sheet2": [
+        {"item_id": 7, "replacement_interval_days": 90},  # Brush 교체
+    ],
 }
 
 # 비동기 교체 주기 데이터 초기화 함수
@@ -40,31 +36,32 @@ async def check_and_initialize_schedule(sheet_name: str):
     if not existing_data:
         print(f"No data found for {sheet_name}, inserting default values...")
         today = datetime.now().strftime("%Y-%m-%d")
+
+        # 장비 호기 1호기부터 30호기까지의 데이터를 삽입
+        for equipment_id in range(1, 31):  # 1호기부터 30호기까지
+            # 해당 시트의 기본 항목들을 가져옴
+            if sheet_name in default_items:
+                items = default_items[sheet_name]
+                for item in items:
+                    next_replacement_date = (datetime.now() + timedelta(days=item["replacement_interval_days"])).strftime("%Y-%m-%d")
+                    new_record = {
+                        "sheet_name": sheet_name,
+                        "item_id": item["item_id"],
+                        "last_replacement_date": today,
+                        "next_replacement_date": next_replacement_date,
+                        "replacement_interval_days": item["replacement_interval_days"],
+                        "equipment_id": equipment_id  # 장비 호기 설정 (1호기부터 30호기까지)
+                    }
+                    # 새로운 데이터를 비동기 방식으로 테이블에 삽입
+                    await database.execute(replacement_schedule.insert().values(new_record))
         
-        # 해당 시트의 기본 항목들을 가져옴
-        if sheet_name in default_items:
-            items = default_items[sheet_name]
-            for item in items:
-                next_replacement_date = (datetime.now() + timedelta(days=item["replacement_interval_days"])).strftime("%Y-%m-%d")
-                new_record = {
-                    "sheet_name": sheet_name,
-                    "item_id": item["item_id"],
-                    "last_replacement_date": today,
-                    "next_replacement_date": next_replacement_date,
-                    "replacement_interval_days": item["replacement_interval_days"],
-                    "equipment_id": 0  # fqa와 fvi는 장비 호기가 없으므로 기본값 0으로 설정
-                }
-                # 새로운 데이터를 비동기 방식으로 테이블에 삽입
-                await database.execute(replacement_schedule.insert().values(new_record))
-            
-            print(f"Default values inserted for {sheet_name}.")
-        else:
-            print(f"Sheet name {sheet_name} not found in default_items.")
+        print(f"Default values inserted for {sheet_name} from equipment_id 1 to 30.")
     else:
         print(f"Data already exists for {sheet_name}.")
 
     # 데이터베이스 연결 종료
     await database.disconnect()
+
 # 현재 테이블 데이터를 확인하고 출력하는 함수
 async def fetch_replacement_schedule_data():
     query = select(replacement_schedule)
@@ -75,13 +72,15 @@ async def fetch_replacement_schedule_data():
     else:
         print("Current data in the replacement_schedule table:")
         for row in data:
-            print(f"ID: {row['id']}, Sheet Name: {row['sheet_name']}, Item ID: {row['item_id']}, Last Replacement Date: {row['last_replacement_date']}, Next Replacement Date: {row['next_replacement_date']}, Interval Days: {row['replacement_interval_days']}")
+            print(f"ID: {row['id']}, Sheet Name: {row['sheet_name']}, Item ID: {row['item_id']}, Equipment ID: {row['equipment_id']}, Last Replacement Date: {row['last_replacement_date']}, Next Replacement Date: {row['next_replacement_date']}, Interval Days: {row['replacement_interval_days']}")
 
 # 비동기 함수 실행을 위한 메인 루틴
 async def main():
     await database.connect()
     await check_and_initialize_schedule("fqa_sheet1")
     await check_and_initialize_schedule("fvi_sheet1")
+    await check_and_initialize_schedule("vrs_sheet1")  # VRS Sheet1 추가
+    await check_and_initialize_schedule("vrs_sheet2")  # VRS Sheet2 추가
     await fetch_replacement_schedule_data()  # 테이블 데이터 조회 및 출력
     await database.disconnect()
 
@@ -90,5 +89,3 @@ async def main():
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-
-

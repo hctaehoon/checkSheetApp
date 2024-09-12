@@ -195,7 +195,11 @@
                     </tr>
                 </tbody>
             </table>
-
+            <!-- 비고 입력 필드 추가 -->
+            <div class="form-group">
+                <label for="remark">비고:</label>
+                <textarea id="remark" name="remark" rows="3" cols="50"></textarea>
+            </div>
             <div class="form-group button-group">
                 <button onclick="selectAll()">모든 항목 점검</button>
                 <button onclick="submitData()">체크 완료</button>
@@ -214,13 +218,18 @@
     <script>
 
         window.onload = function() {
+            // 현재 시트 이름을 정의 (예: fvi_sheet1)
             const sheetName = "fvi_sheet1";
+
+            // 교체 주기 데이터를 서버에서 불러옴
             fetch(`/get/replacement_schedule/${sheetName}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     data.replacement_data.forEach(item => {
-                        document.querySelector(`#item-${item.item_id}-last-replacement`).textContent = `마지막 교체일: ${item.last_replacement_date}`;
-                        document.querySelector(`#item-${item.item_id}-next-replacement`).textContent = `다음 교체일: ${item.next_replacement_date}`;
+                        // 각 항목의 교체 주기 데이터를 UI에 표시
+                        document.querySelector(`#item-${item.item_id}-last-replacement`).textContent = `마지막 교체: ${item.last_replacement_date}`;
+                        document.querySelector(`#item-${item.item_id}-next-replacement`).textContent = `다음 교체: ${item.next_replacement_date}`;
                     });
                 })
                 .catch(error => {
@@ -228,16 +237,24 @@
                 });
         };
 
+        // 뒤로 가기 함수
         function goBack() {
-            window.history.back();
+            window.history.back(); // 이전 페이지로 이동
         }
 
+        // 홈으로 이동하는 함수
+        function goHome() {
+            window.location.href = "/"; // 첫 라우터로 이동
+        }
+
+        // 다음 시트로 이동하는 함수
         function goToNextSheet() {
             const currentUrl = window.location.href;
             const nextSheetUrl = currentUrl.replace("sheet1", "sheet2");
             window.location.href = nextSheetUrl;
         }
 
+        // 모두 O 선택 버튼 기능
         function selectAll() {
             const checkboxes = document.querySelectorAll('.toggle-checkbox');
             checkboxes.forEach(checkbox => {
@@ -245,7 +262,7 @@
             });
         }
 
-        // / 교체 여부 버튼 클릭 시 재확인 창 띄우기
+// 교체 여부 버튼 클릭 시 재확인 창 띄우기
 function confirmChange(item, id, intervalDays) {
     const confirmed = confirm(`${item}를 교체처리할까요?`);
     if (confirmed) {
@@ -259,9 +276,8 @@ function confirmChange(item, id, intervalDays) {
         }
 
         // 교체 완료 시 교체일 정보를 업데이트
-        // const today = new Date().toISOString().split('T')[0];  // 오늘 날짜
-        
-        const today = '2024-09-16'; // Test 날짜
+        const today = new Date().toISOString().split('T')[0];  // 오늘 날짜
+        // const today = '2024-09-15'; // Test 날짜
         const nextReplacementDate = new Date();
         nextReplacementDate.setDate(nextReplacementDate.getDate() + intervalDays);  // 다음 교체일 계산
         const formattedNextDate = nextReplacementDate.toISOString().split('T')[0];  // 다음 교체일 포맷
@@ -299,70 +315,107 @@ function confirmChange(item, id, intervalDays) {
     }
 }
 
-        function submitData() {
-            const checkboxes = document.querySelectorAll('.toggle-checkbox');
-            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
-            const sheetName = "fvi_sheet1";
 
-            fetch(`/check/replacement_dates/${sheetName}`)
+// 데이터 수집 및 서버로 전송
+function submitData() {
+    const checkboxes = document.querySelectorAll('.toggle-checkbox');
+    const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+    const sheetName = "fvi_sheet1";
+
+    // 모든 체크박스가 체크되었는지 확인
+    if (unchecked) {
+        alert("모든 체크 항목을 완료해 주세요.");
+        return; // 체크되지 않은 항목이 있으면 함수 종료
+    }
+
+    // 교체 주기 확인
+    fetch(`/check/replacement_dates/${sheetName}`)
+        .then(response => response.json())
+        .then(result => {
+            if (!result.allValid) {
+                alert("교체해야 하는 항목이 있습니다. 교체 후 진행해주세요.");
+                return;
+            }
+
+            // 한 번만 "체크 완료" 확인
+            if (confirm("정말로 체크 완료하시겠습니까?")) {
+                const checkboxes = document.querySelectorAll('.toggle-checkbox');
+                const toggleButtons = document.querySelectorAll('.toggle-button');
+                const remark = document.querySelector('#remark').value;  // 비고 입력 값
+
+                const data = {
+                    team: "{{ team }}",
+                    worker: "{{ worker }}",
+                    manager: "{{ manager }}",
+                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), // yymmdd 형식 날짜
+                    checks: []
+                };
+
+                checkboxes.forEach(checkbox => {
+                    data.checks.push({
+                        id: checkbox.dataset.id,
+                        checked: checkbox.checked ? 1 : 0
+                    });
+                });
+
+                toggleButtons.forEach(button => {
+                    data.checks.push({
+                        id: button.dataset.id,
+                        checked: button.value
+                    });
+                });
+
+                // 체크리스트 데이터 전송
+                fetch('/save/fvi_sheet1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
                 .then(response => response.json())
                 .then(result => {
-                    if (!result.allValid) {
-                        alert("교체해야 하는 항목이 있습니다. 교체 후 진행해주세요.");
-                        return;
-                    }
-
-                    if (confirm("정말로 체크 완료하시겠습니까?")) {
-                        const checkboxes = document.querySelectorAll('.toggle-checkbox');
-                        const toggleButtons = document.querySelectorAll('.toggle-button');
-                        const data = {
-                            team: "{{ team }}",
-                            worker: "{{ worker }}",
-                            manager: "{{ manager }}",
-                            date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2),
-                            checks: []
-                        };
-
-                        checkboxes.forEach(checkbox => {
-                            data.checks.push({
-                                id: checkbox.dataset.id,
-                                checked: checkbox.checked ? 1 : 0
-                            });
-                        });
-
-                        toggleButtons.forEach(button => {
-                            data.checks.push({
-                                id: button.dataset.id,
-                                checked: button.value
-                            });
-                        });
-
-                        fetch('/save/fvi_sheet1', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(data)
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            alert(result.message);
-                            goToNextSheet();
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                    }
+                    alert(result.message);
+                    goToNextSheet();  // 데이터 전송 후 다음 시트로 이동
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
 
-            if (unchecked) {
-                alert("모든 체크 항목을 완료해 주세요.");
-                return;
+                // 비고 데이터가 있는 경우 비고 데이터 전송
+                if (remark.trim() !== "") {
+                    const remarkData = {
+                        process: "fvi",
+                        team: "{{ team }}",
+                        manager: "{{ manager }}",
+                        remark: remark,
+                        date: data.date
+                    };
+
+                    fetch('/save/remark', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(remarkData)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log(result.message);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
             }
-        }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
+
     </script>
 </body>
 </html>
