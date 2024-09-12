@@ -125,7 +125,21 @@ remarks_table = Table(
     Column("date", String)            # 날짜
 )
 
+# 교체 주기 테이블
+replacement_schedule = Table(
+    "replacement_schedule",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("sheet_name", String, nullable=False),  # 시트 이름 (예: fqa_sheet1)
+    Column("item_id", Integer, nullable=False),  # 항목 번호 (예: 11번, 12번)
+    Column("equipment_id", Integer, nullable=True),  # 장비 번호 (VRS 공정에서 사용)
+    Column("last_replacement_date", String, nullable=False),  # 마지막 교체일
+    Column("next_replacement_date", String, nullable=False),  # 다음 교체일
+    Column("replacement_interval_days", Integer, nullable=False),  # 교체 주기 (일 단위)
+)
 
+engine = create_engine(DATABASE_URL)
+metadata.create_all(engine) 
 # 비고 데이터 삽입 함수 추가
 async def insert_remark_data(data):
     query = remarks_table.insert().values(

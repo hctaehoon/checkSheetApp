@@ -2,22 +2,19 @@ from fastapi import FastAPI, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import Table
+from sqlalchemy import Table , select
 from typing import Optional
 import asyncio
 import os
 import platform
 import subprocess
 from db import database, insert_data, get_all_data, delete_data, metadata , insert_remark_data , get_remarks , remarks_table
+from db import replacement_schedule
+from datetime import datetime
+from db_init import check_and_initialize_schedule
+from contextlib import asynccontextmanager
 
 
-
-app = FastAPI()
-
-# 정적 파일(예: CSS 파일)을 서빙하기 위한 설정
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-templates = Jinja2Templates(directory="templates")
 
 processes = [
     {"id": 1, "name": "FQA", "url": "/fqa"},
@@ -70,15 +67,38 @@ async def insert_vrs_data(sheet_name: str, data):
         ]
     )
     await database.execute(query)
+async def insert_fvi_data(sheet_name: str, data):
+    table = metadata.tables[sheet_name]
+    
+    query = table.insert().values(
+        [
+            {
+                "item_id": check["id"],
+                "checked": check["checked"],
+                "team": data["team"],
+                "worker": data["worker"],
+                "manager": data["manager"],
+                "date": data["date"]
+            }
+            for check in data["checks"]
+        ]
+    )
+    await database.execute(query)
 
-@app.on_event("startup")
-async def startup():
+# 데이터베이스 연결 함수
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 애플리케이션 시작 시 실행할 코드
     await database.connect()
-
-@app.on_event("shutdown")
-async def shutdown():
+    yield
+    # 애플리케이션 종료 시 실행할 코드
     await database.disconnect()
+app = FastAPI(lifespan=lifespan)
 
+# 정적 파일(예: CSS 파일)을 서빙하기 위한 설정
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     selected_process_id = request.cookies.get("selected_process", None)
@@ -120,7 +140,8 @@ async def fqa_sheet1(request: Request, year: str, month: str, team: str, worker:
         "month": month, 
         "team": team, 
         "worker": worker, 
-        "manager": manager
+        "manager": manager,
+        "sheet_name": "fqa_sheet1" 
     })
 
 @app.get("/fqa/sheet2", response_class=HTMLResponse)
@@ -131,7 +152,8 @@ async def fqa_sheet2(request: Request, year: str, month: str, team: str, worker:
         "month": month, 
         "team": team, 
         "worker": worker, 
-        "manager": manager
+        "manager": manager,
+        "sheet_name": "fqa_sheet2" 
     })
 
 # VRS 시트 3개
@@ -145,7 +167,8 @@ async def vrs_sheet1(request: Request, year: str, month: str, team: str, worker:
         "team": team, 
         "worker": worker, 
         "manager": manager,
-        "equipment_id": equipment_id
+        "equipment_id": equipment_id,
+        "sheet_name": "vrs_sheet1" 
     })
 
 
@@ -158,7 +181,8 @@ async def vrs_sheet2(request: Request, year: str, month: str, team: str, worker:
         "team": team, 
         "worker": worker, 
         "manager": manager,
-        "equipment_id": equipment_id
+        "equipment_id": equipment_id,
+        "sheet_name": "vrs_sheet2" 
     })
 
 @app.get("/vrs/sheet3", response_class=HTMLResponse)
@@ -170,7 +194,8 @@ async def vrs_sheet3(request: Request, year: str, month: str, team: str, worker:
         "team": team, 
         "worker": worker, 
         "manager": manager,
-        "equipment_id": equipment_id
+        "equipment_id": equipment_id,
+        "sheet_name": "vrs_sheet3" 
     })
 # FVI 시트 2개
 @app.get("/fvi/sheet1", response_class=HTMLResponse)
@@ -181,7 +206,8 @@ async def fvi_sheet1(request: Request, year: str, month: str, team: str, worker:
         "month": month, 
         "team": team, 
         "worker": worker, 
-        "manager": manager
+        "manager": manager,
+        "sheet_name": "fqa_sheet1" 
     })
 
 @app.get("/fvi/sheet2", response_class=HTMLResponse)
@@ -192,7 +218,8 @@ async def fvi_sheet2(request: Request, year: str, month: str, team: str, worker:
         "month": month, 
         "team": team, 
         "worker": worker, 
-        "manager": manager
+        "manager": manager,
+        "sheet_name": "fvi_sheet2" 
     })
 # 공정 별 저장 로직
 @app.post("/save/{sheet_name}")
@@ -208,7 +235,7 @@ async def save_check_sheet(sheet_name: str, request: Request):
     elif sheet_name.startswith("vrs"):
         await insert_vrs_data(sheet_name, data)
     elif sheet_name.startswith("fvi"):
-        await insert_fqa_data(sheet_name, data)
+        await insert_fvi_data(sheet_name, data)
     elif sheet_name == "remark":
         print("remark전송")
     else:
@@ -289,6 +316,72 @@ async def delete_all_remarks():
     query = remarks_table.delete()
     await database.execute(query)
     return {"message": "모든 비고가 성공적으로 삭제되었습니다."}
+
+# 교체 주기 업데이트 API
+@app.post("/update/replacement_schedule")
+async def update_replacement_schedule(data: dict):
+    # 장비 호기 값이 없는 경우 기본값 0으로 설정
+    equipment_id = data.get('equipment_id', 0)
+    
+    query = replacement_schedule.update().where(
+        (replacement_schedule.c.sheet_name == data['sheet_name']) &
+        (replacement_schedule.c.item_id == data['item_id']) &
+        (replacement_schedule.c.equipment_id == equipment_id)
+    ).values(
+        last_replacement_date=data['last_replacement_date'],
+        next_replacement_date=data['next_replacement_date'],
+        replacement_interval_days=data['replacement_interval_days']
+    )
+    await database.execute(query)
+    return {"message": "Replacement date updated successfully"}
+import logging
+
+# 교체 주기 조회 API
+@app.get("/get/replacement_schedule/{sheet_name}")
+async def get_replacement_schedule(sheet_name: str, equipment_id: Optional[int] = None):
+    query = select(replacement_schedule).where(
+        replacement_schedule.c.sheet_name == sheet_name
+    )
+    
+    if equipment_id is not None:
+        query = query.where(replacement_schedule.c.equipment_id == equipment_id)
+    
+    replacement_data = await database.fetch_all(query)
+    
+    print(f"Query: {query}")  # 실행된 쿼리 출력
+    print(f"Replacement data: {replacement_data}")  # 조회된 데이터 출력
+
+    if not replacement_data:
+        return {"message": "No replacement data found"}
+
+    return {
+        "replacement_data": [
+            {
+                "item_id": row["item_id"],
+                "last_replacement_date": row["last_replacement_date"],
+                "next_replacement_date": row["next_replacement_date"],
+                "replacement_interval_days": row["replacement_interval_days"],
+                "equipment_id": row["equipment_id"]
+            }
+            for row in replacement_data
+        ]
+    }
+
+
+# 교체 주기 체크 API
+@app.get("/check/replacement_dates/{sheet_name}")
+async def check_replacement_dates(sheet_name: str):
+    query = replacement_schedule.select().where(replacement_schedule.c.sheet_name == sheet_name)
+    rows = await database.fetch_all(query)
+
+    # 현재 날짜와 비교하여 교체 주기가 지난 항목이 있는지 확인
+    all_valid = True
+    for row in rows:
+        if row['next_replacement_date'] < datetime.now().strftime("%Y-%m-%d"):
+            all_valid = False
+            break
+
+    return {"allValid": all_valid}
 
 # # FQA 온도 체크
 # @app.get("/fqa/temp", response_class=HTMLResponse)

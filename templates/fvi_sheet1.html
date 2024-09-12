@@ -8,10 +8,6 @@
 </head>
 <body>
 
-    <!-- 홈 버튼
-    <div class="home-button-container">
-        <button class="home-button" onclick="goHome()">Home</button>
-    </div> -->
     <div class="container">
         <div class="info-section">
             <p><strong>Year:</strong> {{ year }}</p>
@@ -24,7 +20,6 @@
         <div class="table-section">
             <div class="title">FVI 청소 Check Sheet</div>
 
-            <!-- 표 구성 -->
             <table>
                 <thead>
                     <tr>
@@ -38,6 +33,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- 교체 주기 항목 추가 -->
                     <tr>
                         <td>1</td>
                         <td>검사 Jig 상태 점검</td>
@@ -163,8 +159,10 @@
                         <td>일괄 교체</td>
                         <td>1회/3개월</td>
                         <td>
+                            <span id="item-14-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-14-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="14" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Picker Pad', 14)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('Picker Pad', 14, 90)">교체</button>
                         </td>
                     </tr>
                     <tr>
@@ -175,8 +173,10 @@
                         <td>일괄 교체</td>
                         <td>1회/3개월</td>
                         <td>
+                            <span id="item-15-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-15-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="15" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Brush', 15)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('Brush', 15, 90)">교체</button>
                         </td>
                     </tr>
                     <tr>
@@ -187,8 +187,10 @@
                         <td>일괄 교체</td>
                         <td>1회/1년</td>
                         <td>
+                            <span id="item-16-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-16-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="16" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Jig Pad', 16)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('Jig Pad', 16, 365)">교체</button>
                         </td>
                     </tr>
                 </tbody>
@@ -198,12 +200,10 @@
                 <button onclick="selectAll()">모든 항목 점검</button>
                 <button onclick="submitData()">체크 완료</button>
             </div>
-            
-            <!-- 홈 버튼 아래에 뒤로가기 버튼 추가 -->
+
             <div class="back-button-container">
                 <button class="back-button" onclick="goBack()">Back</button>
             </div>
-            <!-- 다음 시트 버튼 -->
             <div class="form-group next-sheet-button">
                 <button onclick="goToNextSheet()">다음 시트</button>
             </div>
@@ -212,23 +212,32 @@
     </div>
 
     <script>
-        // 뒤로 가기 함수
+
+        window.onload = function() {
+            const sheetName = "fvi_sheet1";
+            fetch(`/get/replacement_schedule/${sheetName}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.replacement_data.forEach(item => {
+                        document.querySelector(`#item-${item.item_id}-last-replacement`).textContent = `마지막 교체일: ${item.last_replacement_date}`;
+                        document.querySelector(`#item-${item.item_id}-next-replacement`).textContent = `다음 교체일: ${item.next_replacement_date}`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching replacement data:', error);
+                });
+        };
+
         function goBack() {
-            window.history.back(); // 이전 페이지로 이동
+            window.history.back();
         }
 
-        // 홈으로 이동하는 함수
-        function goHome() {
-            window.location.href = "/"; // 첫 라우터로 이동
-        }
-        // 다음 시트로 이동하는 함수
         function goToNextSheet() {
             const currentUrl = window.location.href;
             const nextSheetUrl = currentUrl.replace("sheet1", "sheet2");
             window.location.href = nextSheetUrl;
         }
 
-        // 모두 O 선택 버튼 기능
         function selectAll() {
             const checkboxes = document.querySelectorAll('.toggle-checkbox');
             checkboxes.forEach(checkbox => {
@@ -236,59 +245,122 @@
             });
         }
 
-        // 교체 여부 버튼 클릭 시 재확인 창 띄우기
-        function confirmChange(item, id) {  // id를 추가
-            const confirmed = confirm(` ${item}를 교체처리할까요?`);
-            if (confirmed) {
-                alert('Replacement confirmed');
-                document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
-            } else {
-                alert('Replacement canceled');
-            }
+        // / 교체 여부 버튼 클릭 시 재확인 창 띄우기
+function confirmChange(item, id, intervalDays) {
+    const confirmed = confirm(`${item}를 교체처리할까요?`);
+    if (confirmed) {
+        alert('Replacement confirmed');
+        document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
+
+        // 교체 완료 후 버튼 숨기기
+        const button = document.querySelector(`button.confirm-button[onclick*='${id}']`);
+        if (button) {
+            button.style.display = 'none';  // 버튼을 숨김
         }
 
-        // 데이터 수집 및 서버로 전송
-        function submitData() {
-            if (confirm("정말로 체크 완료하시겠습니까?")) {
-                const checkboxes = document.querySelectorAll('.toggle-checkbox');
-                const toggleButtons = document.querySelectorAll('.toggle-button');
-                const data = {
-                    team: "{{ team }}",
-                    worker: "{{ worker }}",
-                    manager: "{{ manager }}",
-                    date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2), // yymmdd 형식 날짜
-                    checks: []
-                };
-            
-                checkboxes.forEach(checkbox => {
-                    data.checks.push({
-                        id: checkbox.dataset.id,
-                        checked: checkbox.checked ? 1 : 0
-                    });
-                });
+        // 교체 완료 시 교체일 정보를 업데이트
+        // const today = new Date().toISOString().split('T')[0];  // 오늘 날짜
+        
+        const today = '2024-09-16'; // Test 날짜
+        const nextReplacementDate = new Date();
+        nextReplacementDate.setDate(nextReplacementDate.getDate() + intervalDays);  // 다음 교체일 계산
+        const formattedNextDate = nextReplacementDate.toISOString().split('T')[0];  // 다음 교체일 포맷
 
-                toggleButtons.forEach(button => {
-                    data.checks.push({
-                        id: button.dataset.id,
-                        checked: button.value
-                    });
-                });
-            
-                fetch('/save/fvi_sheet1', {  // '/save/sheet1' 경로로 POST 요청
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
+        // 교체일 UI 업데이트
+        document.querySelector(`#item-${id}-last-replacement`).textContent = `마지막 교체일: ${today}`;
+        document.querySelector(`#item-${id}-next-replacement`).textContent = `다음 교체일: ${formattedNextDate}`;
+
+        // 서버로 교체 데이터 전송
+        const data = {
+            sheet_name: "fvi_sheet1",  // 시트 이름
+            item_id: id,               // 항목 ID
+            last_replacement_date: today,  // 마지막 교체일
+            next_replacement_date: formattedNextDate,  // 다음 교체일
+            replacement_interval_days: intervalDays  // 교체 주기 추가
+        };
+
+        // 교체 주기 업데이트 API로 데이터 전송
+        fetch('/update/replacement_schedule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log(result.message);
+        })
+        .catch(error => {
+            console.error('Error updating replacement schedule:', error);
+        });
+    } else {
+        alert('Replacement canceled');
+    }
+}
+
+        function submitData() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+            const sheetName = "fvi_sheet1";
+
+            fetch(`/check/replacement_dates/${sheetName}`)
                 .then(response => response.json())
                 .then(result => {
-                    alert(result.message);
-                    goToNextSheet();  // 데이터 전송 후 다음 시트로 이동
+                    if (!result.allValid) {
+                        alert("교체해야 하는 항목이 있습니다. 교체 후 진행해주세요.");
+                        return;
+                    }
+
+                    if (confirm("정말로 체크 완료하시겠습니까?")) {
+                        const checkboxes = document.querySelectorAll('.toggle-checkbox');
+                        const toggleButtons = document.querySelectorAll('.toggle-button');
+                        const data = {
+                            team: "{{ team }}",
+                            worker: "{{ worker }}",
+                            manager: "{{ manager }}",
+                            date: new Date().toISOString().slice(0, 10).replace(/-/g, "").slice(2),
+                            checks: []
+                        };
+
+                        checkboxes.forEach(checkbox => {
+                            data.checks.push({
+                                id: checkbox.dataset.id,
+                                checked: checkbox.checked ? 1 : 0
+                            });
+                        });
+
+                        toggleButtons.forEach(button => {
+                            data.checks.push({
+                                id: button.dataset.id,
+                                checked: button.value
+                            });
+                        });
+
+                        fetch('/save/fvi_sheet1', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            alert(result.message);
+                            goToNextSheet();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                });      
+                });
+
+            if (unchecked) {
+                alert("모든 체크 항목을 완료해 주세요.");
+                return;
             }
         }
     </script>

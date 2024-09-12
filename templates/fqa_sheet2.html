@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FQA PM Check Sheet</title>
-    <link rel="stylesheet" href="/static/fqa2.css?v=1.0">
+    <link rel="stylesheet" href="/static/fqa1.css?v=1.0">
 </head>
 <body>
 
@@ -217,6 +217,16 @@
 
         // 데이터 수집 및 서버로 전송
         function submitData() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+
+            // 모든 체크박스가 체크되었는지 확인
+            if (unchecked) {
+                alert("모든 체크 항목을 완료해 주세요.");
+                return; // 체크되지 않은 항목이 있으면 함수 종료
+            }
+            
+            
             if (confirm("정말로 체크 완료하시겠습니까?")) {
                 const checkboxes = document.querySelectorAll('.toggle-checkbox');
                 const data = {

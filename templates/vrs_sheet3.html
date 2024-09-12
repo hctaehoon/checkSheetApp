@@ -158,6 +158,15 @@
         }
 
         function submitData() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+
+            // 모든 체크박스가 체크되었는지 확인
+            if (unchecked) {
+                alert("모든 체크 항목을 완료해 주세요.");
+                return; // 체크되지 않은 항목이 있으면 함수 종료
+            }
+
             if (confirm("정말로 체크 완료하시겠습니까?")) {
                 const checkboxes = document.querySelectorAll('.toggle-checkbox');
                 const data = {

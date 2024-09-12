@@ -89,8 +89,10 @@
                         <td></td>
                         <td>정기 교체 1회/3개월</td>
                         <td>
+                            <span id="item-7-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-7-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="7" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Regulator', 7)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('Regulator', 7, 90)">교체</button>
                         </td>
                     </tr>
                     <tr>
@@ -100,8 +102,10 @@
                         <td></td>
                         <td>정기 교체 1회/1년</td>
                         <td>
+                            <span id="item-8-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-8-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="8" value="0">
-                            <button class="confirm-button" onclick="confirmChange('Boat Pad', 8)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('Boat Pad', 8, 365)">교체</button>
                         </td>
                     </tr>
                     <tr>
@@ -111,8 +115,10 @@
                         <td></td>
                         <td>"정기 교체 1회/5년, 파손 및 노후시 즉시 교체"</td>
                         <td>
+                            <span id="item-9-last-replacement">마지막 교체일: </span><br>
+                            <span id="item-9-next-replacement">다음 교체일: </span>
                             <input type="hidden" class="toggle-button" data-id="9" value="0">
-                            <button class="confirm-button" onclick="confirmChange('자바라', 9)">교체</button>
+                            <button class="confirm-button" onclick="confirmChange('자바라', 9, 1825)">교체</button>
                         </td>
                     </tr>
                 </tbody>
@@ -134,7 +140,7 @@
 
     <script>
         function goBack() {
-            window.history.back(); // 이전 페이지로 이동
+            window.history.back(); 
         }
 
         function selectAll() {
@@ -144,20 +150,29 @@
             });
         }
 
-        function confirmChange(item, id) {
+        function confirmChange(item, id, intervalDays) {
             const confirmed = confirm(`${item}를 교체처리할까요?`);
             if (confirmed) {
-                alert('Replacement confirmed');
                 document.querySelector(`input.toggle-button[data-id="${id}"]`).value = "1";
-            } else {
-                alert('Replacement canceled');
+                const today = new Date().toISOString().split('T')[0];
+                const nextReplacementDate = new Date();
+                nextReplacementDate.setDate(nextReplacementDate.getDate() + intervalDays);
+                const formattedNextDate = nextReplacementDate.toISOString().split('T')[0];
+                document.querySelector(`#item-${id}-last-replacement`).textContent = `마지막 교체일: ${today}`;
+                document.querySelector(`#item-${id}-next-replacement`).textContent = `다음 교체일: ${formattedNextDate}`;
             }
         }
 
         function submitData() {
+            const checkboxes = document.querySelectorAll('.toggle-checkbox');
+            const unchecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+
+            if (unchecked) {
+                alert("모든 체크 항목을 완료해 주세요.");
+                return;
+            }
+
             if (confirm("정말로 체크 완료하시겠습니까?")) {
-                const checkboxes = document.querySelectorAll('.toggle-checkbox');
-                const toggleButtons = document.querySelectorAll('.toggle-button');
                 const data = {
                     team: "{{ team }}",
                     worker: "{{ worker }}",
@@ -174,6 +189,7 @@
                     });
                 });
 
+                const toggleButtons = document.querySelectorAll('.toggle-button');
                 toggleButtons.forEach(button => {
                     data.checks.push({
                         id: button.dataset.id,
@@ -188,12 +204,7 @@
                     },
                     body: JSON.stringify(data)
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('네트워크 응답이 성공적이지 않습니다.');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(result => {
                     alert(result.message);
                     goToNextSheet();

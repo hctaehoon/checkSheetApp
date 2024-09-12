@@ -1,41 +1,41 @@
-/* 기본 설정 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif; /* 깔끔하고 모던한 폰트 */
+    font-family: 'Poppins', sans-serif; /* 세련된 폰트 */
 }
 
 body {
-    background-color: #f7f8fa; /* 밝고 부드러운 배경색 */
+    background: linear-gradient(135deg, #f6f9fc 0%, #e9f2f9 100%); /* 고급스러운 그라데이션 배경 */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    overflow: auto; /* 스크롤 가능하게 설정 */
 }
 
 .container {
-    background-color: #ffffff; /* 흰색 배경 */
-    border-radius: 10px; /* 부드러운 모서리 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
-    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.95); /* 약간의 투명도 */
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.08); /* 더 부드럽고 깊은 그림자 */
+    padding: 50px;
+    max-width: 800px;
     width: 100%;
-    max-width: 600px; /* 최대 너비 조정 */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: auto;
-    overflow-y: auto;
+    justify-content: center;
+    margin: 20px;
+    backdrop-filter: blur(10px); /* 배경 블러 효과 */
+    transition: all 0.3s ease;
 }
 
 .title {
-    font-size: 28px; /* 폰트 크기 조금 키움 */
-    font-weight: 600; /* 폰트 굵기를 약간 강조 */
-    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
     text-align: center;
-    color: #2f3437; /* 진한 회색 톤의 폰트 */
+    color: #1a2a3a; /* 더 깊은 색상 */
+    letter-spacing: 0.5px;
 }
 
 .form-group {
@@ -43,128 +43,94 @@ body {
 }
 
 .form-group label {
-    display: block;
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 8px;
-    color: #6b7280; /* 중간 밝기의 회색 */
+    color: #4a5568;
+    font-weight: 500;
 }
 
 .form-group input, 
 .form-group select {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     font-size: 16px;
-    border: 1px solid #e0e0e0; /* 부드러운 경계 */
-    border-radius: 6px;
-    background-color: #fafafa; /* 연한 회색 배경 */
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .form-group input:focus, 
 .form-group select:focus {
-    border-color: #5c88f7; /* 밝은 파란색으로 포커스 */
-    background-color: #ffffff; /* 포커스 시 배경을 흰색으로 */
+    border-color: #4299e1;
+    background-color: #ffffff;
     outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
 /* 버튼 스타일 */
 button {
-    background-color: #5c88f7; /* 부드러운 파란색 */
+    background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 14px 20px;
     font-size: 16px;
-    font-weight: 500;
-    border-radius: 8px;
+    font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 button:hover {
-    background-color: #4a76e5; /* 조금 더 진한 파란색 */
-    transform: translateY(-2px); /* 가벼운 상단 이동 */
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
 }
 
 button:active {
-    background-color: #3d61cb; /* 눌렸을 때 어두운 파란색 */
     transform: translateY(0);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* 홈 버튼 스타일 */
-.home-button-container {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
 .home-button {
-    background-color: #34c759; /* 깔끔한 그린색 */
-    color: white;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    width: 100%;
+    background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
 }
 
 .home-button:hover {
-    background-color: #2eb54c; /* 더 진한 그린 */
-}
-
-.home-button:active {
-    background-color: #249040; /* 더 어두운 그린 */
+    background: linear-gradient(135deg, #2f855a 0%, #22543d 100%);
 }
 
 /* 시트 버튼 스타일 */
 .sheet-buttons {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
 }
 
 .sheet-buttons button {
-    background-color: #f1f3f4; /* 부드러운 회색 */
-    color: #333333;
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    color: #2d3748;
+    border: 1px solid #cbd5e0;
+    font-weight: 500;
 }
 
 .sheet-buttons button:hover {
-    background-color: #e1e5e8; /* 살짝 더 어두운 회색 */
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+    color: #1a202c;
 }
 
-.sheet-buttons button:active {
-    background-color: #d1d5d9; /* 더 어두운 회색 */
-}
-
-/* 태블릿을 위한 반응형 조정 */
-@media (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
     .container {
-        max-width: 90%;
-        padding: 20px;
-        overflow-y: auto;
+        max-width: 90%; /* 너비를 90%로 설정하여 화면에 더 크게 보이게 함 */
+        padding: 50px; /* 패딩을 늘려서 더 넉넉하게 표시 */
     }
 
     .title {
-        font-size: 24px;
-    }
-
-    .form-group label, 
-    .form-group input, 
-    .form-group select {
-        font-size: 14px;
-    }
-
-    button {
-        padding: 10px;
-        font-size: 14px;
-    }
-
-    .home-button {
-        padding: 10px 15px;
-        font-size: 14px;
-    }
-
-    .sheet-buttons button {
-        padding: 10px;
-        font-size: 14px;
+        font-size: 32px; /* 제목 글씨 크기 유지 */
     }
 }
