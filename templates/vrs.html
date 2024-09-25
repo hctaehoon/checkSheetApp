@@ -5,15 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VRS Data Entry</title>
     <link rel="stylesheet" href="/static/fqa.css">
+    <style>
+        /* 관리자 모드 활성화/비활성화 시 색상 변경 */
+        .secret-mode-active {
+            background-color: #f8d7da; /* 활성화 시 색상 */
+            color: #721c24;
+        }
+
+        .secret-mode-inactive {
+            background-color: #d4edda; /* 비활성화 시 색상 */
+            color: #155724;
+        }
+
+        /* 기본적으로 모달 및 관리자 폼 숨김 처리 */
+        #admin-modal, #secret-modal, .secret-section {
+            display: none;
+        }
+    </style>
 </head>
-<body>
+<body class="secret-mode-inactive"> <!-- 기본 상태 비활성화 -->
+
     <div class="container">
         <div class="title">VRS 메인화면</div>
-        
+
         <!-- 홈 버튼 -->
         <div class="home-button-container">
             <button class="home-button" onclick="goHome()">공정선택창 돌아가기</button>
         </div>
+
         <!-- 필수 데이터 입력 폼 -->
         <form id="dataForm">
             <div class="form-group">
@@ -43,7 +62,6 @@
                 <label for="equipment_id">장비 호기:</label>
                 <input type="number" id="equipment_id" name="equipment_id" required>
             </div>
-            
 
             <!-- 저장 버튼 -->
             <div class="form-group">
@@ -53,77 +71,131 @@
             <!-- 시트 선택 -->
             <div class="sheet-buttons">
                 <button type="button" onclick="openSheet(1)">VRS CHECK SHEET</button>
-
-             <!-- 온도 관리 시트 추가 -->
             </div>
         </form>
+
+        <!-- 관리자 모드 활성화 버튼 -->
+        <div class="admin-section">
+            <button id="admin-button" onclick="activateAdminMode()">관리자 모드 활성화</button>
+        </div>
+
+        <!-- 관리자 모드 활성화 모달 -->
+        <div id="admin-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAdminModal()">&times;</span>
+                <h2>관리자 모드 활성화</h2>
+                <form id="adminForm">
+                    <div class="form-group">
+                        <label for="admin-password">비밀번호:</label>
+                        <input type="password" id="admin-password" name="password" placeholder="비밀번호 입력" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="submitAdminPassword()">확인</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 관리자 모드 활성화 후 나타나는 여러 장비 입력 폼 -->
+        <div id="secret-modal" class="modal secret-section">
+            <div class="modal-content">
+                <span class="close" onclick="closeSecretModal()">&times;</span>
+                <h2>관리자 모드 - 여러 장비 입력</h2>
+                <form id="secretForm">
+                    <div class="form-group">
+                        <label for="secret-team">조 선택:</label>
+                        <select id="secret-team" name="team" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="secret-worker">작업자:</label>
+                        <input type="text" id="secret-worker" name="worker" value="정태훈" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="secret-manager">관리자:</label>
+                        <input type="text" id="secret-manager" name="manager" value="정태훈" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="secret-equipment">장비 호기(콤마로 구분):</label>
+                        <input type="text" id="secret-equipment" name="equipment_ids" placeholder="예: 1,2,3,4" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="submitSecretData()">데이터 저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
         function goHome() {
             window.location.href = "/"; // 첫 라우터로 이동
         }
+    
         // 오늘 날짜를 기준으로 년/월 자동 기입
         window.onload = function() {
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
-
+    
             document.getElementById('year').value = year;
             document.getElementById('month').value = month;
-
+    
             loadTeamData();
         };
-
-// 팀별 작업자 및 관리자 정보 불러오기
-function loadTeamData() {
-    const team = document.getElementById('team').value;
-    const savedData = localStorage.getItem(`team_${team}`);
-
-    if (savedData) {
-        const teamData = JSON.parse(savedData);
-        document.getElementById('worker').value = teamData.worker;
-        document.getElementById('manager').value = teamData.manager;
-        document.getElementById('equipment_id').value = teamData.equipment_id;  // 수정된 부분
-    } else {
-        document.getElementById('worker').value = '';
-        document.getElementById('manager').value = '';
-        document.getElementById('equipment_id').value = '';  // 수정된 부분
-    }
-}
-
-// 팀별 작업자 및 관리자 정보 저장하기
-function saveTeamData() {
-    const team = document.getElementById('team').value;
-    const worker = document.getElementById('worker').value;
-    const manager = document.getElementById('manager').value;
-    const equipment_id = document.getElementById('equipment_id').value;  // 수정된 부분
-
-    const teamData = {
-        worker: worker,
-        manager: manager,
-        equipment_id: equipment_id  // 수정된 부분
-    };
-
-    localStorage.setItem(`team_${team}`, JSON.stringify(teamData));
-    alert(`Data saved for Team ${team}`);
-}
-// 필수 입력 체크 함수
-function validateForm() {
-    const year = document.getElementById('year').value.trim();
-    const month = document.getElementById('month').value.trim();
-    const team = document.getElementById('team').value;
-    const worker = document.getElementById('worker').value.trim();
-    const manager = document.getElementById('manager').value.trim();
-    const equipment_id = document.getElementById('equipment_id').value.trim();
-
-    if (year === '' || month === '' || team === '' || worker === '' || manager === '' || equipment_id === '') {
-        alert('모든 필수 입력란을 채워주세요.');
-        return false; // 폼이 유효하지 않음
-    }
-    return true; // 폼이 유효함
-}
-
+    
+        // 팀별 작업자 및 관리자 정보 불러오기
+        function loadTeamData() {
+            const team = document.getElementById('team').value;
+            const savedData = localStorage.getItem(`team_${team}`);
+    
+            if (savedData) {
+                const teamData = JSON.parse(savedData);
+                document.getElementById('worker').value = teamData.worker;
+                document.getElementById('manager').value = teamData.manager;
+                document.getElementById('equipment_id').value = teamData.equipment_id;  // 수정된 부분
+            } else {
+                document.getElementById('worker').value = '';
+                document.getElementById('manager').value = '';
+                document.getElementById('equipment_id').value = '';  // 수정된 부분
+            }
+        }
+    
+        // 팀별 작업자 및 관리자 정보 저장하기
+        function saveTeamData() {
+            const team = document.getElementById('team').value;
+            const worker = document.getElementById('worker').value;
+            const manager = document.getElementById('manager').value;
+            const equipment_id = document.getElementById('equipment_id').value;  // 수정된 부분
+    
+            const teamData = {
+                worker: worker,
+                manager: manager,
+                equipment_id: equipment_id  // 수정된 부분
+            };
+    
+            localStorage.setItem(`team_${team}`, JSON.stringify(teamData));
+            alert(`Data saved for Team ${team}`);
+        }
+    
+        // 필수 입력 체크 함수
+        function validateForm() {
+            const year = document.getElementById('year').value.trim();
+            const month = document.getElementById('month').value.trim();
+            const team = document.getElementById('team').value;
+            const worker = document.getElementById('worker').value.trim();
+            const manager = document.getElementById('manager').value.trim();
+            const equipment_id = document.getElementById('equipment_id').value.trim();
+    
+            if (year === '' || month === '' || team === '' || worker === '' || manager === '' || equipment_id === '') {
+                alert('모든 필수 입력란을 채워주세요.');
+                return false; // 폼이 유효하지 않음
+            }
+            return true; // 폼이 유효함
+        }
+    
         // 시트 열기 기능 (시트 번호에 따라 다른 페이지로 이동하도록 설정)
         function openSheet(sheetNumber) {
             if (!validateForm()) {
@@ -132,16 +204,81 @@ function validateForm() {
             const form = document.getElementById('dataForm');
             const formData = new FormData(form);
             const queryString = new URLSearchParams(formData).toString();
-        
+    
             if (sheetNumber === 1) {
                 window.location.href = `/vrs/sheet1?${queryString}`;
             } else if (sheetNumber === 2) {
                 window.location.href = `/vrs/sheet2?${queryString}`;
             } else if (sheetNumber === 3) {
-                window.location.href = `/vrs/sheet3?${queryString}`; 
+                window.location.href = `/vrs/sheet3?${queryString}`;
             }
         }
-
+    
+        // 관리자 모드 활성화 여부
+        let isAdminModeActive = false;
+    
+        // 관리자 모드 활성화 함수
+        function activateAdminMode() {
+            document.getElementById('admin-modal').style.display = "block";
+        }
+    
+        // 관리자 모드 비밀번호 입력 확인
+        function submitAdminPassword() {
+            const password = document.getElementById('admin-password').value;
+            if (password === "xogns") {
+                isAdminModeActive = true;
+                document.body.classList.remove('secret-mode-inactive');
+                document.body.classList.add('secret-mode-active');
+                closeAdminModal();
+                showSecretSection();
+            } else {
+                alert("비밀번호가 틀렸습니다.");
+            }
+        }
+    
+        // 관리자 모드 모달 닫기
+        function closeAdminModal() {
+            document.getElementById('admin-modal').style.display = "none";
+        }
+    
+        // 히든 모드 관련 함수
+        function showSecretSection() {
+            const secretSection = document.querySelector('.secret-section');
+            secretSection.style.display = 'block';
+        }
+    
+        function closeSecretModal() {
+            document.getElementById('secret-modal').style.display = "none";
+        }
+    
+        // 히든 모드 데이터 전송
+        function submitSecretData() {
+            const formData = new FormData(document.getElementById('secretForm'));
+            const equipmentIds = formData.get('equipment_ids').split(',');
+    
+            // POST 요청으로 데이터 전송
+            fetch('/submit-secret', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    team: formData.get('team'),
+                    worker: formData.get('worker'),
+                    manager: formData.get('manager'),
+                    equipment_ids: equipmentIds.map(id => id.trim())
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                closeSecretModal();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     </script>
+    
 </body>
 </html>
