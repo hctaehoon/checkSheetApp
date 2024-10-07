@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import Table , select
+from sqlalchemy import Table , select , insert
 from typing import Optional
 import asyncio
 import os
@@ -66,6 +66,7 @@ async def insert_vrs_data(sheet_name: str, data):
             for check in data["checks"]
         ]
     )
+
     await database.execute(query)
 async def insert_fvi_data(sheet_name: str, data):
     table = metadata.tables[sheet_name]
@@ -159,7 +160,6 @@ async def fqa_sheet2(request: Request, year: str, month: str, team: str, worker:
 # VRS 시트 3개
 @app.get("/vrs/sheet1", response_class=HTMLResponse)
 async def vrs_sheet1(request: Request, year: str, month: str, team: str, worker: str, manager: str, equipment_id: int):
-    print(f"Received equipment_id: {equipment_id}")
     return templates.TemplateResponse("vrs_sheet1.html", {
         "request": request, 
         "year": year, 
@@ -227,7 +227,6 @@ async def save_check_sheet(sheet_name: str, request: Request):
     data = await request.json()
     
     # 시트 이름을 로그로 출력하여 확인
-    print(f"Received sheet name: {sheet_name}")
     
     # 체크리스트 데이터 처리
     if sheet_name.startswith("fqa"):
@@ -322,8 +321,6 @@ async def delete_all_remarks():
 @app.post("/update/replacement_schedule")
 async def update_replacement_schedule(data: dict):
     # 장비 호기 값이 없는 경우 기본값 0으로 설정
-    print(f"Received data: {data}")
-    # 장비 호기가 있는 경우 출력
     equipment_id = data.get('equipment_id', 0)
 
     
@@ -341,7 +338,6 @@ async def update_replacement_schedule(data: dict):
         replacement_interval_days=data['replacement_interval_days']
     )
 
-    print(f"Executing query with equipment_id={equipment_id}: {query}") 
     await database.execute(query)
     return {"message": "Replacement date updated successfully"}
 
@@ -357,8 +353,6 @@ async def get_replacement_schedule(sheet_name: str, equipment_id: Optional[int] 
     
     replacement_data = await database.fetch_all(query)
     
-    print(f"Query: {query}")  # 실행된 쿼리 출력
-    print(f"Replacement data: {replacement_data}")  # 조회된 데이터 출력
 
     if not replacement_data:
         return {"message": "No replacement data found"}
@@ -397,47 +391,93 @@ async def check_replacement_dates(sheet_name: str, equipment_id: Optional[int] =
     return {"allValid": all_valid}
 
 
-# # FQA 온도 체크
-# @app.get("/fqa/temp", response_class=HTMLResponse)
-# async def temp_page(request: Request, year: str, month: str, team: str, worker: str, manager: str):
-#     process = "FQA"
-#     return templates.TemplateResponse("temp.html", {
-#         "request": request, 
-#         "year": year, 
-#         "month": month, 
-#         "team": team, 
-#         "worker": worker, 
-#         "manager": manager,
-#         "process": process
-#     })
+async def insert_vrs_data_direct(sheet_name: str, data):
+    """
+    관리자 모드에서 VRS 시트에 데이터를 강제로 삽입하는 함수.
+    """
+    # 시트에 맞는 테이블 객체를 가져옴
+    table = metadata.tables[sheet_name]
 
-# 병합 작업을 비동기로 처리하는 함수
-# async def run_merge_script(process):
-#     # 예시: FQA 공정 병합
-#     if process == "FQA":
-#         if platform.system() == "Windows":
-#             subprocess.run(["python", "fqa_merge.py"])
-#         else:
-#             await asyncio.create_subprocess_exec("python3", "fqa_merge.py")
+    # 삽입할 데이터를 구성
+    query = table.insert().values(
+        [
+            {
+                "item_id": item["item_id"],
+                "checked": item["checked"],
+                "team": data["team"],
+                "worker": data["worker"],
+                "manager": data["manager"],
+                "equipment_id": data["equipment_id"],
+                "date": data["date"]
+            }
+            for item in data["checks"]
+        ]
+    )
+    
+    # 데이터베이스에 삽입
+    await database.execute(query)
 
-# @app.get("/download")
-# async def download_page(request: Request):
-#     return templates.TemplateResponse("download.html", {"request": request})
+# VRS 시트별 삽입 항목 리스트 정의
+vrs_sheet1_items = [
+    {"item_id": 1, "checked": 1}, {"item_id": 2, "checked": 1}, {"item_id": 3, "checked": 1},
+    {"item_id": 4, "checked": 1}, {"item_id": 5, "checked": 1}, {"item_id": 6, "checked": 1},
+    {"item_id": 7, "checked": 1}, {"item_id": 8, "checked": 0}, {"item_id": 9, "checked": 0}
+]
 
-# @app.post("/download")
-# async def download_file(request: Request, month: int = Form(...)):
-#     filename = f"FQA_{month}월.xlsx"
-#     filepath = f"./excel/fqa/{filename}"
+vrs_sheet2_items = [
+    {"item_id": 1, "checked": 1}, {"item_id": 2, "checked": 1}, {"item_id": 3, "checked": 1},
+    {"item_id": 4, "checked": 1}, {"item_id": 5, "checked": 1}, {"item_id": 6, "checked": 1},
+    {"item_id": 7, "checked": 0}
+]
 
-#     if not os.path.exists(filepath):
-#         return JSONResponse(content={"message": "파일이 존재하지 않습니다."})
+vrs_sheet3_items = [
+    {"item_id": 1, "checked": 1}, {"item_id": 2, "checked": 1}, {"item_id": 3, "checked": 1},
+    {"item_id": 4, "checked": 1}, {"item_id": 5, "checked": 1}, {"item_id": 6, "checked": 1}
+]
+@app.post("/submit-secret")
+async def submit_secret(request: Request):
+    try:
+        data = await request.json()  # 클라이언트에서 받은 JSON 데이터
+    except ValueError:
+        return JSONResponse(content={"message": "잘못된 입력 형식입니다."}, status_code=400)
+    
+    # 기본 데이터 처리
+    team = data['team']
+    worker = data['worker']
+    manager = data['manager']
+    equipment_ids = [int(e_id) for e_id in data['equipment_ids'] if e_id]  # 장비 ID 변환
+    today = datetime.now().strftime("%y%m%d")  # 오늘 날짜
 
-#     return FileResponse(filepath, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=filename)
+    if not equipment_ids:
+        return JSONResponse(content={"message": "장비 호기가 입력되지 않았습니다."}, status_code=400)
 
-# @app.get("/merge/{process}")
-# async def merge_process_data(process: str):
-#     await run_merge_script(process)
-#     return JSONResponse(content={"message": f"{process} 데이터 병합이 완료되었습니다."})
+    # 강제 삽입을 위한 함수
+    async def insert_into_table(sheet_name: str, equipment_id: int, items: list):
+        table = metadata.tables[sheet_name]
+        query = table.insert().values(
+            [
+                {
+                    "item_id": item["item_id"],
+                    "checked": item["checked"],
+                    "team": team,
+                    "worker": worker,
+                    "manager": manager,
+                    "equipment_id": equipment_id,
+                    "date": today
+                }
+                for item in items
+            ]
+        )
+        await database.execute(query)  # 데이터베이스에 쿼리 실행
+
+    # 각 시트별로 데이터 강제 삽입
+    for equipment_id in equipment_ids:
+        await insert_into_table("vrs_sheet1", equipment_id, vrs_sheet1_items)
+        await insert_into_table("vrs_sheet2", equipment_id, vrs_sheet2_items)
+        await insert_into_table("vrs_sheet3", equipment_id, vrs_sheet3_items)
+
+    return JSONResponse(content={"message": "데이터가 성공적으로 저장되었습니다."})
+
 
 
 if __name__ == "__main__":
