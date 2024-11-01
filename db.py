@@ -72,6 +72,45 @@ vrs_sheet3 = Table(
     Column("date", String),
 )
 
+# n2baking Sheet Tables
+n2baking_sheet1 = Table(
+    "n2baking_sheet1",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("item_id", Integer),
+    Column("checked", Integer),
+    Column("team", String),
+    Column("worker", String),
+    Column("manager", String),
+    Column("equipment_id", Integer),  # 장비 호기
+    Column("date", String),
+)
+
+n2baking_sheet2 = Table(
+    "n2baking_sheet2",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("item_id", Integer),
+    Column("checked", Integer),
+    Column("team", String),
+    Column("worker", String),
+    Column("manager", String),
+    Column("equipment_id", Integer),  # 장비 호기
+    Column("date", String),
+)
+n2baking_sheet3 = Table(
+    "n2baking_sheet3",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("item_id", Integer),
+    Column("checked", Integer),
+    Column("team", String),
+    Column("worker", String),
+    Column("manager", String),
+    Column("equipment_id", Integer),  # 장비 호기
+    Column("date", String),
+)
+
 # FVI Sheet Tables
 fvi_sheet1 = Table(
     "fvi_sheet1",
@@ -188,7 +227,17 @@ async def insert_data(sheet_name: str, data):
     elif sheet_name == "fvi_sheet2":
         table = fvi_sheet2
         include_equipment_id = False
+    elif sheet_name == "n2baking_sheet1":
+        table = n2baking_sheet1
+        include_equipment_id = True
+    elif sheet_name == "n2baking_sheet2":
+        table = n2baking_sheet2
+        include_equipment_id = True
+    elif sheet_name == "n2baking_sheet3":
+        table = n2baking_sheet3
+        include_equipment_id = True
     else:
+
         raise ValueError("Invalid sheet name")
 
     if sheet_name == "temperature":
@@ -238,7 +287,7 @@ async def delete_data(table_name: str, item_id: int):
     query = f"DELETE FROM {table_name} WHERE id = :item_id"
     await database.execute(query, {"item_id": item_id})
 
-VALID_TABLES = ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "temperature_records"]
+VALID_TABLES = ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "temperature_records", "n2baking_sheet1", "n2baking_sheet2", "n2baking_sheet3"]
 
 async def get_all_data(table_name: str):
     if table_name not in VALID_TABLES:
