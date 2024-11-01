@@ -86,6 +86,43 @@ async def insert_fvi_data(sheet_name: str, data):
     )
     await database.execute(query)
 
+async def insert_n2baking_data(sheet_name: str, data):
+    """
+    n2baking 시트에 데이터를 삽입하는 함수
+    """
+    print(f"Inserting n2baking data for {sheet_name}")  # 로깅 추가
+    print("Data received:", data)  # 받은 데이터 로깅
+    
+    try:
+        # 시트에 맞는 테이블 객체를 가져옴
+        table = metadata.tables[sheet_name]
+        
+        # 삽입할 데이터 구성
+        insert_data = [
+            {
+                "item_id": item["id"],
+                "checked": item["checked"],
+                "team": data["team"],
+                "worker": data["worker"],
+                "manager": data["manager"],
+                "equipment_id": data["equipment_id"],
+                "date": data["date"]
+            }
+            for item in data["checks"]
+        ]
+        
+        print("Formatted data for insertion:", insert_data)  # 포맷된 데이터 로깅
+        
+        # 데이터베이스에 삽입
+        query = table.insert().values(insert_data)
+        await database.execute(query)
+        
+        print(f"Data successfully inserted into {sheet_name}")  # 성공 로깅
+        
+    except Exception as e:
+        print(f"Error inserting data into {sheet_name}:", str(e))  # 에러 로깅
+        raise HTTPException(status_code=500, detail=str(e))
+
 # 데이터베이스 연결 함수
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -131,6 +168,11 @@ async def vrs_page(request: Request):
 @app.get("/afvi", response_class=HTMLResponse)
 async def afvi_page(request: Request):
     return templates.TemplateResponse("afvi.html", {"request": request})
+
+@app.get("/n2baking", response_class=HTMLResponse)
+async def n2baking_page(request: Request):
+    return templates.TemplateResponse("n2baking.html", {"request": request})
+
 # 공정별 시트 
 # FQA
 @app.get("/fqa/sheet1", response_class=HTMLResponse)
@@ -221,6 +263,44 @@ async def fvi_sheet2(request: Request, year: str, month: str, team: str, worker:
         "manager": manager,
         "sheet_name": "fvi_sheet2" 
     })
+
+@app.get("/n2baking/sheet1", response_class=HTMLResponse)
+async def n2baking_sheet1(request: Request, year: str, month: str, team: str, worker: str, manager: str, equipment_id: int):
+    return templates.TemplateResponse("n2baking_sheet1.html", {
+        "request": request, 
+        "year": year, 
+        "month": month, 
+        "team": team, 
+        "worker": worker, 
+        "manager": manager,
+        "equipment_id": equipment_id,
+        "sheet_name": "n2baking_sheet1" 
+    })
+@app.get("/n2baking/sheet2", response_class=HTMLResponse)
+async def n2baking_sheet2(request: Request, year: str, month: str, team: str, worker: str, manager: str, equipment_id: int):
+    return templates.TemplateResponse("n2baking_sheet2.html", {
+        "request": request, 
+        "year": year, 
+        "month": month, 
+        "team": team, 
+        "worker": worker, 
+        "manager": manager,
+        "equipment_id": equipment_id,
+        "sheet_name": "n2baking_sheet2" 
+    })
+@app.get("/n2baking/sheet3", response_class=HTMLResponse)
+async def n2baking_sheet3(request: Request, year: str, month: str, team: str, worker: str, manager: str, equipment_id: int):
+    return templates.TemplateResponse("n2baking_sheet3.html", {
+        "request": request, 
+        "year": year, 
+        "month": month, 
+        "team": team, 
+        "worker": worker, 
+        "manager": manager,
+        "equipment_id": equipment_id,
+        "sheet_name": "vrs_sheet3" 
+    })
+
 # 공정 별 저장 로직
 @app.post("/save/{sheet_name}")
 async def save_check_sheet(sheet_name: str, request: Request):
@@ -235,6 +315,8 @@ async def save_check_sheet(sheet_name: str, request: Request):
         await insert_vrs_data(sheet_name, data)
     elif sheet_name.startswith("fvi"):
         await insert_fvi_data(sheet_name, data)
+    elif sheet_name.startswith("n2baking"):
+        await insert_n2baking_data(sheet_name, data)
     elif sheet_name == "remark":
         print("remark전송")
     else:
@@ -278,21 +360,21 @@ async def db_manage(request: Request):
 
 @app.get("/db_manage/{table_name}", response_class=HTMLResponse)
 async def get_table_data(request: Request, table_name: str):
-    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "temperature_records"]:
+    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "n2baking_sheet1", "n2baking_sheet2", "n2baking_sheet3", "temperature_records"]:
         raise HTTPException(status_code=404, detail="Table not found")
     data = await get_all_data(table_name)
     return templates.TemplateResponse("table_data.html", {"request": request, "data": data, "table_name": table_name})
 
 @app.delete("/db_manage/{table_name}/delete/{item_id}")
 async def delete_item(table_name: str, item_id: int):
-    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "temperature_records"]:
+    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "n2baking_sheet1", "n2baking_sheet2", "n2baking_sheet3", "temperature_records"]:
         raise HTTPException(status_code=404, detail="Table not found")
     await delete_data(table_name, item_id)
     return {"message": "Item deleted successfully"}
 
 @app.delete("/db_manage/{table_name}/delete_all")
 async def delete_all_data(table_name: str):
-    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "temperature_records"]:
+    if table_name not in ["fqa_sheet1", "fqa_sheet2", "vrs_sheet1", "vrs_sheet2", "vrs_sheet3", "fvi_sheet1", "fvi_sheet2", "n2baking_sheet1", "n2baking_sheet2", "n2baking_sheet3", "temperature_records"]:
         raise HTTPException(status_code=404, detail="Table not found")
     query = f"DELETE FROM {table_name}"
     await database.execute(query)
@@ -320,26 +402,41 @@ async def delete_all_remarks():
 # 교체 주기 업데이트 API
 @app.post("/update/replacement_schedule")
 async def update_replacement_schedule(data: dict):
-    # 장비 호기 값이 없는 경우 기본값 0으로 설정
     equipment_id = data.get('equipment_id', 0)
-
     
-    if equipment_id:
-        print(f"Equipment ID: {equipment_id}")
-    else:
-        print("장비가없음")
-    query = replacement_schedule.update().where(
+    # 먼저 해당 레코드가 존재하는지 확인
+    check_query = select(replacement_schedule).where(
         (replacement_schedule.c.sheet_name == data['sheet_name']) &
         (replacement_schedule.c.item_id == data['item_id']) &
         (replacement_schedule.c.equipment_id == equipment_id)
-    ).values(
-        last_replacement_date=data['last_replacement_date'],
-        next_replacement_date=data['next_replacement_date'],
-        replacement_interval_days=data['replacement_interval_days']
     )
+    
+    existing_record = await database.fetch_one(check_query)
+    
+    if existing_record:
+        # 기존 레코드가 있으면 업데이트
+        query = replacement_schedule.update().where(
+            (replacement_schedule.c.sheet_name == data['sheet_name']) &
+            (replacement_schedule.c.item_id == data['item_id']) &
+            (replacement_schedule.c.equipment_id == equipment_id)
+        ).values(
+            last_replacement_date=data['last_replacement_date'],
+            next_replacement_date=data['next_replacement_date'],
+            replacement_interval_days=data['replacement_interval_days']
+        )
+    else:
+        # 레코드가 없으면 새로 삽입
+        query = replacement_schedule.insert().values(
+            sheet_name=data['sheet_name'],
+            item_id=data['item_id'],
+            equipment_id=equipment_id,
+            last_replacement_date=data['last_replacement_date'],
+            next_replacement_date=data['next_replacement_date'],
+            replacement_interval_days=data['replacement_interval_days']
+        )
 
     await database.execute(query)
-    return {"message": "Replacement date updated successfully"}
+    return {"message": "Replacement schedule updated successfully"}
 
 # 교체 주기 조회 API
 @app.get("/get/replacement_schedule/{sheet_name}")
@@ -363,6 +460,7 @@ async def get_replacement_schedule(sheet_name: str, equipment_id: Optional[int] 
                 "item_id": row["item_id"],
                 "last_replacement_date": row["last_replacement_date"],
                 "next_replacement_date": row["next_replacement_date"],
+                
                 "replacement_interval_days": row["replacement_interval_days"],
                 "equipment_id": row["equipment_id"]
             }
@@ -478,7 +576,72 @@ async def submit_secret(request: Request):
 
     return JSONResponse(content={"message": "데이터가 성공적으로 저장되었습니다."})
 
+# n2baking 시트1 데이터 저장
+@app.post("/save/n2baking_sheet1")
+async def save_n2baking_sheet1(data: dict):
+    print("Attempting to save n2baking_sheet1 data:", data)  # 데이터 로깅
+    try:
+        query = n2baking_sheet1.insert().values(
+            [
+                {
+                    "item_id": item["id"],
+                    "checked": item["checked"],
+                    "team": data["team"],
+                    "worker": data["worker"],
+                    "manager": data["manager"],
+                    "equipment_id": data["equipment_id"],
+                    "date": data["date"]
+                }
+                for item in data["checks"]
+            ]
+        )
+        print("Executing query:", query)  # 쿼리 로깅
+        await database.execute(query)
+        print("Data saved successfully to n2baking_sheet1")  # 성공 로깅
+        return {"message": "Data saved successfully"}
+    except Exception as e:
+        print("Error saving data:", str(e))  # 에러 로깅
+        raise HTTPException(status_code=500, detail=str(e))
 
+# n2baking 시트2 데이터 저장
+@app.post("/save/n2baking_sheet2")
+async def save_n2baking_sheet2(data: dict):
+    query = n2baking_sheet2.insert().values(
+        [
+            {
+                "item_id": item["id"],
+                "checked": item["checked"],
+                "team": data["team"],
+                "worker": data["worker"],
+                "manager": data["manager"],
+                "equipment_id": data["equipment_id"],
+                "date": data["date"]
+            }
+            for item in data["checks"]
+        ]
+    )
+    await database.execute(query)
+    return {"message": "Data saved successfully"}
+
+# n2baking 시트3 데이터 저장
+@app.post("/save/n2baking_sheet3")
+async def save_n2baking_sheet3(data: dict):
+    query = n2baking_sheet3.insert().values(
+        [
+            {
+                "item_id": item["id"],
+                "checked": item["checked"],
+                "team": data["team"],
+                "worker": data["worker"],
+                "manager": data["manager"],
+                "equipment_id": data["equipment_id"],
+                "date": data["date"]
+            }
+            for item in data["checks"]
+        ]
+    )
+    await database.execute(query)
+    return {"message": "Data saved successfully"}
 
 if __name__ == "__main__":
     import uvicorn
