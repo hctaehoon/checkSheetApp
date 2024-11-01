@@ -79,9 +79,13 @@ async def main():
     await database.connect()
     await check_and_initialize_schedule("fqa_sheet1")
     await check_and_initialize_schedule("fvi_sheet1")
-    await check_and_initialize_schedule("vrs_sheet1")  # VRS Sheet1 추가
-    await check_and_initialize_schedule("vrs_sheet2")  # VRS Sheet2 추가
-    await fetch_replacement_schedule_data()  # 테이블 데이터 조회 및 출력
+    await check_and_initialize_schedule("vrs_sheet1")
+    await check_and_initialize_schedule("vrs_sheet2")
+    # n2baking 시트들 추가
+    await check_and_initialize_schedule("n2baking_sheet1")
+    await check_and_initialize_schedule("n2baking_sheet2")
+    await check_and_initialize_schedule("n2baking_sheet3")
+    await fetch_replacement_schedule_data()
     await database.disconnect()
 
 
